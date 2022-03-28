@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31515.178
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VirtualGuidePlatform", "VirtualGuidePlatform\VirtualGuidePlatform.csproj", "{98A4A54D-E653-425B-9D18-85542C573068}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{98A4A54D-E653-425B-9D18-85542C573068}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98A4A54D-E653-425B-9D18-85542C573068}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98A4A54D-E653-425B-9D18-85542C573068}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98A4A54D-E653-425B-9D18-85542C573068}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {434F4564-9F9B-47DE-8531-A4445230688F}
+	EndGlobalSection
+EndGlobal
