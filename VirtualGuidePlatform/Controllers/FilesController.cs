@@ -9,6 +9,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using VirtualGuidePlatform.Data.Entities;
+using VirtualGuidePlatform.Data.Entities.Blocks;
 
 namespace VirtualGuidePlatform.Controllers
 {
@@ -24,6 +26,80 @@ namespace VirtualGuidePlatform.Controllers
         public FilesController(IWebHostEnvironment env)
         {
             _env = env;
+        }
+
+        [HttpPost]
+        [Route("test")]
+        public async Task<IActionResult> TestPicture([FromForm] PostGuide guide)
+        {
+            int imgId = 0;
+            int videoId = 0; 
+            int textId = 0;
+            List<BlockDB> dbBlocks = new List<BlockDB>();
+            guide.DeserializeBlocks();
+
+            BlockDB dbBlock;
+
+            for (int i = 0; i < guide.DeserializedBlocks.Count; i++)
+            {
+                var block = guide.DeserializedBlocks[i];
+                
+                switch (block.Type)
+                {
+                    case "Text":
+                        TextBlock textBlock = new TextBlock
+                        {
+                            ID = i,
+                            Text = guide.Texts[textId++]
+                        };
+                        dbBlock = new BlockDB
+                        {
+                            Type = "Text",
+                            txtBlock = textBlock
+                        };
+                        dbBlocks.Add(dbBlock);
+                        break;
+                    case "Video":
+                        VideoBlock videoBlock = new VideoBlock
+                        {
+                            ID = i,
+                            URI = "/Videos/" + guide.Videos[videoId].FileName,
+                            FileName = guide.Videos[videoId].FileName
+                        };
+                        dbBlock = new BlockDB
+                        {
+                            Type = "Video",
+                            vidBlock = videoBlock
+                        };
+                        videoId++;
+                        dbBlocks.Add(dbBlock);
+                        break;
+                    case "Image":
+                        ImageBlock imageBlock = new ImageBlock
+                        {
+                            ID = i,
+                            URI = "/Images/" + guide.Images[imgId].FileName,
+                            FileName = guide.Images[imgId].FileName
+                        };
+                        imgId++;
+                        dbBlock = new BlockDB
+                        {
+                            Type = "Image",
+                            imgBlock = imageBlock
+                        };
+                        dbBlocks.Add(dbBlock);
+                        break;
+                }
+            }
+
+            GuideDB guideDB = new GuideDB { blocks = dbBlocks };
+
+            foreach(var item in guideDB.blocks)
+            {
+                Console.WriteLine(item.Type);
+            }
+
+            return Ok("");
         }
 
         [HttpPost]
