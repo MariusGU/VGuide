@@ -14,7 +14,7 @@ namespace VirtualGuidePlatform.Data.Repositories
     {
         Task<Accounts> CreateAccount(Accounts account);
         Task<Accounts> GetAccount(string id);
-        IMongoQueryable<Accounts> GetAccounts();
+        Task<List<Accounts>> GetAccounts();
     }
 
     public class AccountsRepository : IAccountsRepository
@@ -31,27 +31,27 @@ namespace VirtualGuidePlatform.Data.Repositories
             _database = _mongoClient.GetDatabase("app");
             _accountTable = _database.GetCollection<Accounts>("accounts");
         }
-        public IMongoQueryable<Accounts> GetAccounts()
+        public async Task<List<Accounts>> GetAccounts()
         {
-            var dbList = _accountTable.AsQueryable();
-            return dbList;
+            return await _accountTable.AsQueryable().ToListAsync();
         }
 
         public async Task<Accounts> GetAccount(string id)
         {
-            var obj = await _accountTable.FindAsync(x => x.Id == ObjectId.Parse(id));
+            //var obj = await _accountTable.FindAsync(x => x._id == ObjectId.Parse(id));
+            var obj = await _accountTable.FindAsync(x => x._id == id);
             return obj.FirstOrDefault();
         }
         public async Task<Accounts> CreateAccount(Accounts account)
         {
-            var obj = _accountTable.Find(x => x.Id == account.Id).FirstOrDefault();
+            var obj = _accountTable.Find(x => x._id == account._id).FirstOrDefault();
             if (obj == null)
             {
                 await _accountTable.InsertOneAsync(account);
             }
             else
             {
-                await _accountTable.ReplaceOneAsync(x => x.Id == account.Id, account);
+                await _accountTable.ReplaceOneAsync(x => x._id == account._id, account);
             }
             return account;
         }

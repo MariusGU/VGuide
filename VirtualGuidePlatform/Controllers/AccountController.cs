@@ -23,26 +23,26 @@ namespace VirtualGuidePlatform.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<string> GetOne(string id)
+        public async Task<Accounts> GetOne(string id)
         {
             var account = await _accountsRepository.GetAccount(id);
-            var json = JsonConvert.SerializeObject(account);
-            return json;
+            return account;
         }
 
         [HttpGet]
-        public JsonResult GetAll()
+        public async Task<IEnumerable<Accounts>> GetAll()
         {
-            var all = _accountsRepository.GetAccounts();
-            return new JsonResult(all);
+            var all = await _accountsRepository.GetAccounts();
+            //var elems = JsonConvert.SerializeObject(all);
 
+            return all;
         }
         [HttpPost]
-        public JsonResult CreateOne(Accounts account)
+        public async Task<ActionResult<Accounts>> CreateOne(Accounts account)
         {
-            _accountsRepository.CreateAccount(account);
+            await _accountsRepository.CreateAccount(account);
 
-            return new JsonResult("sukurta");
+            return Created("sukurta", account);
         }
     }
 }

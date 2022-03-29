@@ -23,6 +23,8 @@ namespace VirtualGuidePlatform
             });
             services.AddControllers();
             services.AddScoped<IAccountsRepository, AccountsRepository>();
+            services.AddScoped<IGuidesRepository, GuidesRepository>();
+            services.AddScoped<IBlocksRepository, BlocksRepository>();
 
         }
 

@@ -11,7 +11,8 @@ namespace VirtualGuidePlatform.Data.Entities
     public class Accounts
     {
         [BsonId]
-        public ObjectId Id { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? _id { get; set; }
         [BsonElement("email")]
         public string email { get; set; }
         [BsonElement("password")]
