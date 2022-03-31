@@ -14,7 +14,6 @@ namespace VirtualGuidePlatform.Data.Repositories
         Task<Tblocks> CreateTblock(Tblocks tblock);
         Task<Vblocks> CreateVblock(Vblocks Vblock);
     }
-
     public class BlocksRepository : IBlocksRepository
     {
         private MongoClient _mongoClient;
@@ -33,7 +32,6 @@ namespace VirtualGuidePlatform.Data.Repositories
             _vBlocksTable = _database.GetCollection<Vblocks>("vblocks");
             _tBlocksTable = _database.GetCollection<Tblocks>("tblocks");
         }
-
         public async Task<Pblocks> CreatePblock(Pblocks pblock)
         {
             var obj = _pBlocksTable.Find(x => x._id == pblock._id).FirstOrDefault();

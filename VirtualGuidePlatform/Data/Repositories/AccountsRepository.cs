@@ -15,6 +15,7 @@ namespace VirtualGuidePlatform.Data.Repositories
         Task<Accounts> CreateAccount(Accounts account);
         Task<Accounts> GetAccount(string id);
         Task<List<Accounts>> GetAccounts();
+        Task<Accounts> Login(string email, string password);
     }
 
     public class AccountsRepository : IAccountsRepository
@@ -40,6 +41,12 @@ namespace VirtualGuidePlatform.Data.Repositories
         {
             //var obj = await _accountTable.FindAsync(x => x._id == ObjectId.Parse(id));
             var obj = await _accountTable.FindAsync(x => x._id == id);
+            return obj.FirstOrDefault();
+        }
+        public async Task<Accounts> Login(string email, string password)
+        {
+            //var obj = await _accountTable.FindAsync(x => x._id == ObjectId.Parse(id));
+            var obj = await _accountTable.FindAsync(x => x.email == email && x.password == password);
             return obj.FirstOrDefault();
         }
         public async Task<Accounts> CreateAccount(Accounts account)

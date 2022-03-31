@@ -19,11 +19,7 @@ namespace VirtualGuidePlatform.Controllers
     [Route("api/files")]
     public class FilesController : ControllerBase
     {
-        private const string PathToServiceAccountKeyFile = "circular-jet-345211-05dcd8d32504.json";
-        private const string ServiceAccountEmail = "vvista@circular-jet-345211.iam.gserviceaccount.com";
-
         private readonly IWebHostEnvironment _env;
-
         private IGuidesRepository _guidesRepository;
         private readonly IBlocksRepository _blocksRepository;
 
@@ -33,12 +29,11 @@ namespace VirtualGuidePlatform.Controllers
             _guidesRepository = guidesRepository;
             _blocksRepository = blocksRepository;
         }
-        private async Task<List<BlockDB>> FormaGotGuidePost([FromForm] PostGuide guide)
+        private async Task<ActionResult<Guides>> FormaGotGuidePost([FromForm] PostGuide guide)
         {
             int imgId = 0;
             int videoId = 0;
             int textId = 0;
-            List<BlockDB> dbBlocks = new List<BlockDB>();
             guide.DeserializeBlocks();
 
             Guides guide1 = new Guides()
@@ -51,14 +46,7 @@ namespace VirtualGuidePlatform.Controllers
                 uDate = DateTime.Now,
                 price = 1.99
             };
-
             var created = await _guidesRepository.CreateGuide(guide1);
-
-            string guideId = created._id;
-
-            Console.WriteLine(guideId);
-
-            BlockDB dbBlock;
 
             for (int i = 0; i < guide.DeserializedBlocks.Count; i++)
             {
@@ -66,6 +54,8 @@ namespace VirtualGuidePlatform.Controllers
 
                 switch (block.Type)
                 {
+                    //---------------------------------------------------------------------------
+                    //teksto bloko sukurimas ir issugojimas i duomenu baze
                     case "Text":
                         Tblocks textBlock = new Tblocks
                         {
@@ -73,16 +63,12 @@ namespace VirtualGuidePlatform.Controllers
                             priority = block.ID,
                             gId = created._id
                         };
-
                         await _blocksRepository.CreateTblock(textBlock);
-
-                        dbBlock = new BlockDB
-                        {
-                            Type = "Text",
-                            txtBlock = textBlock
-                        };
-                        dbBlocks.Add(dbBlock);
                         break;
+                        //-----------------------------------------------------------------------
+                        //Video bloko sukurimas i duomenu baze ir failo ikelimas i Video folderi
+                        //pakeitus jo pavadinima i gido id + v + video failo eiles numeris +
+                        // + failo tipo prierasas (mp4, ....)
                     case "Video":
                         string dirPathV = Path.Combine(_env.ContentRootPath, "Videos");
                         string[] splitTypeV = guide.Videos[videoId].ContentType.Split('/');
@@ -99,23 +85,19 @@ namespace VirtualGuidePlatform.Controllers
                         {
                             await guide.Videos[videoId].CopyToAsync(stream);
                         }
-
                         await _blocksRepository.CreateVblock(videoBlock);
-
-                        dbBlock = new BlockDB
-                        {
-                            Type = "Video",
-                            vidBlock = videoBlock
-                        };
                         videoId++;
-                        dbBlocks.Add(dbBlock);
                         break;
+                        //------------------------------------------------------------------------
+                        //Nuotraukos bloko sukurimas i duomenu baze, nuotraukos issaugojimas i 
+                        // Image aplanka pakeitus pavadinima i gido id + p + nuotraukos eiles numeris
+                        // nuotrauku failu eileje + nuotraukos failo tipas (png, jpg, ...)
                     case "Image":
                         string dirPathP = Path.Combine(_env.ContentRootPath, "Images");
                         Console.WriteLine(guide.Images[imgId].ContentType);
                         string[] splitTypeP = guide.Images[imgId].ContentType.Split('/');
                         Console.WriteLine(splitTypeP[1]);
-                        string combinedP = created._id + "t" + imgId.ToString() + "." + splitTypeP[1];
+                        string combinedP = created._id + "p" + imgId.ToString() + "." + splitTypeP[1];
                         string filePathP = Path.Combine(dirPathP, combinedP);
                         Pblocks imageBlock = new Pblocks
                         {
@@ -124,41 +106,24 @@ namespace VirtualGuidePlatform.Controllers
                             FileName = combinedP,
                             gId = created._id
                         };
-
                         using (var stream = new FileStream(filePathP, FileMode.Create))
                         {
                             await guide.Images[imgId].CopyToAsync(stream);
                         }
-
                         await _blocksRepository.CreatePblock(imageBlock);
-
                         imgId++;
-                        dbBlock = new BlockDB
-                        {
-                            Type = "Image",
-                            imgBlock = imageBlock
-                        };
-                        dbBlocks.Add(dbBlock);
                         break;
+                        //-------------------------------------------------------------------------
                 }
             }
-            return dbBlocks;
+            return Created("sukurta", guide1);
         }
 
         [HttpPost]
         [Route("test")]
         public async Task<IActionResult> TestPicture([FromForm] PostGuide guide)
         {
-            List<BlockDB> dbBlocks = await FormaGotGuidePost(guide);
-
-            Console.WriteLine(dbBlocks.Count);
-
-            GuideDB guideDB = new GuideDB { blocks = dbBlocks };
-
-            foreach(var item in guideDB.blocks)
-            {
-                Console.WriteLine(item.Type);
-            }
+            await FormaGotGuidePost(guide);
 
             return Ok("");
         }
