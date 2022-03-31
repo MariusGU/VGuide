@@ -13,6 +13,7 @@ namespace VirtualGuidePlatform.Data.Repositories
     {
         Task<Guides> CreateGuide(Guides guide);
         Task<Guides> GetGuide(string id);
+        Task<List<Guides>> GetGuides();
     }
 
     public class GuidesRepository : IGuidesRepository
@@ -33,6 +34,10 @@ namespace VirtualGuidePlatform.Data.Repositories
         public async Task<Guides> GetGuide(string id)
         {
             return (await _guidesTable.FindAsync(x => x._id == id)).FirstOrDefault();
+        }
+        public async Task<List<Guides>> GetGuides()
+        {
+            return await _guidesTable.AsQueryable().ToListAsync();
         }
         public async Task<Guides> CreateGuide(Guides guide)
         {

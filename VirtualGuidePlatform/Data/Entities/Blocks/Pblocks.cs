@@ -11,6 +11,7 @@ namespace VirtualGuidePlatform.Data.Entities.Blocks
         public int priority { get; set; }
         public string URI { get; set; }
         public string FileName { get; set; }
+        public string contentType { get; set; }
         public string gId { get; set; }
     }
 }

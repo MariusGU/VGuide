@@ -36,13 +36,19 @@ namespace VirtualGuidePlatform.Controllers
             int textId = 0;
             guide.DeserializeBlocks();
 
+            Console.WriteLine("Title: {0}", guide.Title);
+            Console.WriteLine("Description: {0}", guide.Description);
+            Console.WriteLine("Price: {0}", guide.Price);
+            Console.WriteLine("Language: {0}", guide.Language);
+
             Guides guide1 = new Guides()
             {
                 gCreatorId = 1,
                 locationXY = "dsadsad",
+                description = guide.Description,
                 city = "Kaunas",
-                name = "Generuotas",
-                language = "LT",
+                name = guide.Title,
+                language = guide.Language,
                 uDate = DateTime.Now,
                 price = 1.99
             };
@@ -79,6 +85,7 @@ namespace VirtualGuidePlatform.Controllers
                             priority = i,
                             URI = filePathV,
                             FileName = combinedV,
+                            contentType = guide.Videos[videoId].ContentType,
                             gId = created._id
                         };
                         using (var stream = new FileStream(filePathV, FileMode.Create))
@@ -104,6 +111,7 @@ namespace VirtualGuidePlatform.Controllers
                             priority = i,
                             URI = filePathP,
                             FileName = combinedP,
+                            contentType = guide.Images[imgId].ContentType,
                             gId = created._id
                         };
                         using (var stream = new FileStream(filePathP, FileMode.Create))
@@ -127,7 +135,6 @@ namespace VirtualGuidePlatform.Controllers
 
             return Ok("");
         }
-
         [HttpPost]
         [Route("uploadpicture")]
         public async Task<IActionResult> UploadePicture(IFormFile picture)
