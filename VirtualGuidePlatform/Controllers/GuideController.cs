@@ -46,18 +46,21 @@ namespace VirtualGuidePlatform.Controllers
             var responses = await _responsesRepository.GetResponses(gid);
             var count = 0;
             double sum = 0;
-            if
-            foreach(Responses item in responses)
-            {
-                sum = sum + item.rating;
-                count++;
-            }
-            if(sum/count == 0)
+            if(responses.Count < 1)
             {
                 return 0;
-            }else
+            }
+            else
             {
-                return sum / count;
+                foreach (Responses item in responses)
+                {
+                    sum = sum + item.rating;
+                    count++;
+                }
+                var rating = sum / count;
+                int sized = (int)(rating * 10);
+                double rounded = (double)(sized) / 10;
+                return rounded;
             }
         }
         [HttpGet]
@@ -93,9 +96,7 @@ namespace VirtualGuidePlatform.Controllers
                 FileContentResult file = File(bytes, pblocks[0].contentType, Path.GetFileName(path));
 
                 var rating = await CountRating(item._id);
-                int sized = (int)(rating * 10);
-                double rounded = (double)(sized) / 10;
-                Console.WriteLine("Vidutinis reitingas " + rounded.ToString());
+                Console.WriteLine("Vidutinis reitingas " + rating.ToString());
                 GuideAllDto changed = new GuideAllDto()
                 {
                     Image = file,
@@ -109,7 +110,7 @@ namespace VirtualGuidePlatform.Controllers
                     language = item.language,
                     uDate = item.uDate,
                     price = item.price,
-                    rating = rounded,
+                    rating = rating,
                     isFavourite = false
                 };
                 guidesToReturn.Add(changed);
@@ -169,7 +170,7 @@ namespace VirtualGuidePlatform.Controllers
             }
             blocks.Sort((x, y) => x.ID.CompareTo(y.ID));
             Console.WriteLine(blocks.ElementAt(0).ID);
-
+            var rating = await CountRating(guideId);
             GuideReturnDto guideToReturn = new GuideReturnDto()
             {
                 _id = guide._id,
@@ -182,7 +183,7 @@ namespace VirtualGuidePlatform.Controllers
                 language = guide.language,
                 uDate = guide.uDate,
                 price = guide.price,
-                rating = 0.0,
+                rating = rating,
                 isFavourite = false,
                 blocks = blocks
             };
