@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using VirtualGuidePlatform.Data.Entities;
+using VirtualGuidePlatform.Data.Entities.Blocks;
 using VirtualGuidePlatform.Data.Entities.Dtos;
 using VirtualGuidePlatform.Data.Repositories;
 
@@ -17,11 +18,13 @@ namespace VirtualGuidePlatform.Controllers
     {
         private readonly IGuidesRepository guidesRepository;
         private readonly IResponsesRepository _responsesRepository;
+        private readonly IBlocksRepository _blocksRepository;
 
-        public GuideController(IGuidesRepository guidesRepository, IResponsesRepository responsesRepository)
+        public GuideController(IGuidesRepository guidesRepository, IResponsesRepository responsesRepository, IBlocksRepository blocksRepository)
         {
             this.guidesRepository = guidesRepository;
             _responsesRepository = responsesRepository;
+            _blocksRepository = blocksRepository;
         }
 
         [HttpPost]
@@ -81,9 +84,12 @@ namespace VirtualGuidePlatform.Controllers
             
             foreach (Guides item in guides)
             {
-                var path = "C:\\Users\\Marius\\Desktop\\Guide\\VirtualGuidePlatform\\VirtualGuidePlatform\\Images\\624575a2075fa8cc9616271cp0.jpeg";
+                var pblocks = await _blocksRepository.GetPblocks(item._id);
+                pblocks.Sort((x, y) => x.priority.CompareTo(y.priority));
+                var path = pblocks[0].URI;
+                //var path = "C:\\Users\\Marius\\Desktop\\Guide\\VirtualGuidePlatform\\VirtualGuidePlatform\\Images\\624575a2075fa8cc9616271cp0.jpeg";
                 var bytes = await System.IO.File.ReadAllBytesAsync(path);
-                FileContentResult file = File(bytes, "text/plain", Path.GetFileName(path));
+                FileContentResult file = File(bytes, "image/jpeg", Path.GetFileName(path));
 
                 var rating = await CountRating(item._id);
                 int sized = (int)(rating * 10);
@@ -109,5 +115,10 @@ namespace VirtualGuidePlatform.Controllers
             }
             return Ok(guidesToReturn);
         }
+        //[HttpGet("{guideId}")]
+        //public async Task<ActionResult<Guides>> GetGuide(string guideId)
+        //{
+
+        //}
     }
 }

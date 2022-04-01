@@ -13,6 +13,9 @@ namespace VirtualGuidePlatform.Data.Repositories
         Task<Pblocks> CreatePblock(Pblocks pblock);
         Task<Tblocks> CreateTblock(Tblocks tblock);
         Task<Vblocks> CreateVblock(Vblocks Vblock);
+        Task<List<Vblocks>> GetVblocks(string guideId);
+        Task<List<Pblocks>> GetPblocks(string guideId);
+        Task<List<Tblocks>> GetTblocks(string guideId);
     }
     public class BlocksRepository : IBlocksRepository
     {
@@ -70,6 +73,45 @@ namespace VirtualGuidePlatform.Data.Repositories
                 await _tBlocksTable.ReplaceOneAsync(x => x._id == tblock._id, tblock);
             }
             return tblock;
+        }
+        public async Task<List<Pblocks>> GetPblocks(string guideId)
+        {
+            var res = await _pBlocksTable.FindAsync(x => x.gId == guideId);
+            var items = res.ToList();
+            if(items.Count > 0)
+            {
+                return items;
+            }
+            else
+            {
+                return new List<Pblocks>();
+            }
+        }
+        public async Task<List<Tblocks>> GetTblocks(string guideId)
+        {
+            var res = await _tBlocksTable.FindAsync(x => x.gId == guideId);
+            var items = res.ToList();
+            if (items.Count > 0)
+            {
+                return items;
+            }
+            else
+            {
+                return new List<Tblocks>();
+            }
+        }
+        public async Task<List<Vblocks>> GetVblocks(string guideId)
+        {
+            var res = await _vBlocksTable.FindAsync(x => x.gId == guideId);
+            var items = res.ToList();
+            if (items.Count > 0)
+            {
+                return items;
+            }
+            else
+            {
+                return new List<Vblocks>();
+            }
         }
     }
 }
