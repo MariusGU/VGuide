@@ -20,7 +20,7 @@ namespace VirtualGuidePlatform.Controllers
         private readonly IResponsesRepository _responsesRepository;
         private readonly IBlocksRepository _blocksRepository;
 
-        public GuideController(IGuidesRepository guidesRepository, IResponsesRepository responsesRepository, IBlocksRepository blocksRepository)
+        public GuideController(IGuidesRepository guidesRepository, IResponsesRepository responsesRepository, IBlocksRepository blocksRepository, IGuidesRepository guidesRepository1)
         {
             this.guidesRepository = guidesRepository;
             _responsesRepository = responsesRepository;
@@ -34,18 +34,19 @@ namespace VirtualGuidePlatform.Controllers
 
             return Created("Sukurta", guide);
         }
-        [HttpGet("{guideId}")]
-        public async Task<ActionResult<Guides>> GetGuide(string guideId)
-        {
-            var guide = await guidesRepository.GetGuide(guideId);
+        //[HttpGet("{guideId}")]
+        //public async Task<ActionResult<Guides>> GetGuide(string guideId)
+        //{
+        //    var guide = await guidesRepository.GetGuide(guideId);
 
-            return Ok(guide);
-        }
+        //    return Ok(guide);
+        //}
         private async Task<double> CountRating(string gid)
         {
             var responses = await _responsesRepository.GetResponses(gid);
             var count = 0;
             double sum = 0;
+            if
             foreach(Responses item in responses)
             {
                 sum = sum + item.rating;
@@ -89,7 +90,7 @@ namespace VirtualGuidePlatform.Controllers
                 var path = pblocks[0].URI;
                 //var path = "C:\\Users\\Marius\\Desktop\\Guide\\VirtualGuidePlatform\\VirtualGuidePlatform\\Images\\624575a2075fa8cc9616271cp0.jpeg";
                 var bytes = await System.IO.File.ReadAllBytesAsync(path);
-                FileContentResult file = File(bytes, "image/jpeg", Path.GetFileName(path));
+                FileContentResult file = File(bytes, pblocks[0].contentType, Path.GetFileName(path));
 
                 var rating = await CountRating(item._id);
                 int sized = (int)(rating * 10);
@@ -115,10 +116,78 @@ namespace VirtualGuidePlatform.Controllers
             }
             return Ok(guidesToReturn);
         }
-        //[HttpGet("{guideId}")]
-        //public async Task<ActionResult<Guides>> GetGuide(string guideId)
-        //{
+        [HttpGet("{guideId}")]
+        public async Task<ActionResult<GuideReturnDto>> GetGuide(string guideId)
+        {
+            var guide = await guidesRepository.GetGuide(guideId);
 
-        //}
+            var pictures = await _blocksRepository.GetPblocks(guideId);
+            var videos = await _blocksRepository.GetVblocks(guideId);
+            var texts = await _blocksRepository.GetTblocks(guideId);
+
+            List<BlockDto> blocks = new List<BlockDto>();
+
+            foreach(Pblocks image in pictures)
+            {
+                var path = image.URI;
+                var bytes = await System.IO.File.ReadAllBytesAsync(path);
+                FileContentResult pfile = File(bytes, image.contentType, Path.GetFileName(path));
+
+                BlockDto picture = new BlockDto()
+                {
+                    Type = "Image",
+                    ID = image.priority,
+                    image = pfile,
+                    pblock = image
+                };
+                blocks.Add(picture);
+            }
+            foreach (Vblocks video in videos)
+            {
+                var path = video.URI;
+                var bytes = await System.IO.File.ReadAllBytesAsync(path);
+                FileContentResult vfile = File(bytes, video.contentType, Path.GetFileName(path));
+
+                BlockDto video1 = new BlockDto()
+                {
+                    Type = "Video",
+                    ID = video.priority,
+                    video = vfile,
+                    vblock = video
+                };
+                blocks.Add(video1);
+            }
+            foreach (Tblocks text in texts)
+            {
+                BlockDto text1 = new BlockDto()
+                {
+                    Type = "Text",
+                    ID = text.priority,
+                    tblock = text
+                };
+                blocks.Add(text1);
+            }
+            blocks.Sort((x, y) => x.ID.CompareTo(y.ID));
+            Console.WriteLine(blocks.ElementAt(0).ID);
+
+            GuideReturnDto guideToReturn = new GuideReturnDto()
+            {
+                _id = guide._id,
+                creatorName = "Name",
+                creatorLastName = "LastName",
+                creatorId = guide.gCreatorId.ToString(),
+                description = guide.description,
+                city = guide.city,
+                title = guide.name,
+                language = guide.language,
+                uDate = guide.uDate,
+                price = guide.price,
+                rating = 0.0,
+                isFavourite = false,
+                blocks = blocks
+            };
+
+            return Ok(guideToReturn);
+        }
     }
 }
