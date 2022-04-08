@@ -127,6 +127,44 @@ namespace VirtualGuidePlatform.Controllers
             return Created("sukurta", guide1);
         }
 
+        private async Task<string> UploadPicture(IFormFile image)
+        {
+            string GDriveKeyPath = Path.Combine(_env.ContentRootPath, "GDriveCredentials.json");
+            string DirectoryId = "1I-YrtKmGKyb9Ex-6U_nYwJw-2ynYTo5E";
+
+            string filePath = Path.Combine(Path.Combine(_env.ContentRootPath, "Images"), "624575a2075fa8cc9616271cp0.jpeg");
+
+            var credentials = GoogleCredential.FromFile(GDriveKeyPath).CreateScoped(DriveService.ScopeConstants.Drive);
+
+            var service = new DriveService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credentials
+            });
+
+            var fileMetaData = new Google.Apis.Drive.v3.Data.File()
+            {
+                Name = "Naujas.jpeg",
+                Parents = new List<string>() { DirectoryId }
+            };
+
+            string uploadFileId;
+
+            await using (var fsSource = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            {
+                var request = service.Files.Create(fileMetaData, fsSource, "image/jpeg");
+                request.Fields = "*";
+                var results = await request.UploadAsync();
+
+                if (results.Status == Google.Apis.Upload.UploadStatus.Failed)
+                {
+                    return "";
+                }
+                uploadFileId = request.ResponseBody?.Id;
+                Console.WriteLine(uploadFileId);
+            }
+            return uploadFileId;
+        }
+
         [HttpPost]
         [Route("test")]
         public async Task<IActionResult> TestPicture([FromForm] PostGuide guide)
