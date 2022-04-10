@@ -11,7 +11,7 @@ namespace VirtualGuidePlatform.Data.Entities.Dtos
 {
     public class GuideAllDto
     {
-        public FileContentResult Image { get; set; }
+        public string Image { get; set; }
         public string _id { get; set; }
         public string creatorName { get; set; }
         public string creatorLastName { get; set; }

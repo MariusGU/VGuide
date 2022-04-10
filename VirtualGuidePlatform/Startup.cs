@@ -26,6 +26,7 @@ namespace VirtualGuidePlatform
             services.AddScoped<IGuidesRepository, GuidesRepository>();
             services.AddScoped<IBlocksRepository, BlocksRepository>();
             services.AddScoped<IResponsesRepository, ResponsesRepository>();
+            services.AddScoped<IFilesRepository, FilesRepository>();
 
         }
 

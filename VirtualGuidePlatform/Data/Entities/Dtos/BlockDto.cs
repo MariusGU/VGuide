@@ -13,9 +13,7 @@ namespace VirtualGuidePlatform.Data.Entities.Dtos
     {
         public string Type { get; set; }
         public int ID { get; set; }
-        public FileContentResult? image { get; set; }
         public Pblocks? pblock { get; set; }
-        public FileContentResult? video { get; set; }
         public Vblocks? vblock { get; set; }
         public Tblocks? tblock { get; set; }
     }

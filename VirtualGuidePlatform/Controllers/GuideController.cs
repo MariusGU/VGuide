@@ -19,28 +19,120 @@ namespace VirtualGuidePlatform.Controllers
         private readonly IGuidesRepository guidesRepository;
         private readonly IResponsesRepository _responsesRepository;
         private readonly IBlocksRepository _blocksRepository;
+        private readonly IFilesRepository _filesRepository;
 
-        public GuideController(IGuidesRepository guidesRepository, IResponsesRepository responsesRepository, IBlocksRepository blocksRepository, IGuidesRepository guidesRepository1)
+        public GuideController(IGuidesRepository guidesRepository, IResponsesRepository responsesRepository, IBlocksRepository blocksRepository, IFilesRepository filesRepository)
         {
             this.guidesRepository = guidesRepository;
             _responsesRepository = responsesRepository;
             _blocksRepository = blocksRepository;
+            _filesRepository = filesRepository;
         }
-
         [HttpPost]
-        public async Task<ActionResult<Guides>> CreateGuide(Guides guide)
+        private async Task<ActionResult<Guides>> CreateGuideWithAllData([FromForm] PostGuide guide)
         {
-            await guidesRepository.CreateGuide(guide);
+            Console.WriteLine("ieina");
+            int imgId = 0;
+            int videoId = 0;
+            int textId = 0;
+            guide.DeserializeBlocks();
 
-            return Created("Sukurta", guide);
+            Console.WriteLine("Title: {0}", guide.Title);
+            Console.WriteLine("Description: {0}", guide.Description);
+            Console.WriteLine("Price: {0}", guide.Price);
+            Console.WriteLine("Language: {0}", guide.Language);
+
+            //======Gido sukurimas=========
+            Guides guide1 = new Guides()
+            {
+                gCreatorId = 1,
+                locationXY = "dsadsad",
+                description = guide.Description,
+                city = "Kaunas",
+                name = guide.Title,
+                language = guide.Language,
+                uDate = DateTime.Now,
+                price = 1.99
+            };
+            //==============sukuria nauja gida i duombaze==================
+            var created = await guidesRepository.CreateGuide(guide1);
+            if(created == null)
+            {
+                return BadRequest("Guides is not created");
+            }
+            //====================================
+            //----------------------------------
+            //======================Isparsina multipartform data==================
+            for (int i = 0; i < guide.DeserializedBlocks.Count; i++)
+            {
+                var block = guide.DeserializedBlocks[i];
+                switch (block.Type)
+                {
+                    //---------------------------------------------------------------------------
+                    //teksto bloko sukurimas ir issugojimas i duomenu baze
+                    case "Text":
+                        Tblocks textBlock = new Tblocks
+                        {
+                            text = guide.Texts[textId++],
+                            priority = block.ID,
+                            gId = created._id
+                        };
+                        await _blocksRepository.CreateTblock(textBlock);
+                        break;
+                    //==============================Video bloko=================================
+                    case "Video":
+                        string[] splitTypeV = guide.Videos[videoId].ContentType.Split('/');
+                        string combinedV = created._id + "v" + videoId.ToString() + "." + splitTypeV[1];
+                        //------------ikelia video faila i Firebase storage
+                        var videoFileID = await _filesRepository.UploadFileToFirebase(guide.Videos[videoId], combinedV, "videos");
+                        Console.WriteLine(videoFileID);
+                        if (videoFileID == "")
+                        {
+                            return BadRequest("Nepavyko ikelti video i Google drive");
+                        }
+                        //----------------Sukuria video bloka------------------
+                        Vblocks videoBlock = new Vblocks
+                        {
+                            priority = i,
+                            URI = videoFileID,
+                            FileName = combinedV,
+                            contentType = guide.Videos[videoId].ContentType,
+                            gId = created._id
+                        };
+                        //-----------ideda bloka i duomenu baze---------
+                        await _blocksRepository.CreateVblock(videoBlock);
+                        videoId++;
+                        break;
+                    //===============================Nuotraukos bloko================================
+                    case "Image":
+                        Console.WriteLine(guide.Images[imgId].ContentType);
+                        string[] splitTypeP = guide.Images[imgId].ContentType.Split('/');
+                        Console.WriteLine(splitTypeP[1]);
+                        string combinedP = created._id + "p" + imgId.ToString() + "." + splitTypeP[1];
+                        //Ikelia faila i Firebase storage
+                        var pictureFileID = await _filesRepository.UploadFileToFirebase(guide.Images[imgId], combinedP, "pictures");
+                        if (pictureFileID == "")
+                        {
+                            return BadRequest("Nepavyko ikelti paveikslelio i Google drive");
+                        }
+                        //sukuria picture block ikelimui i duombaze
+                        Pblocks imageBlock = new Pblocks
+                        {
+                            priority = i,
+                            URI = pictureFileID,
+                            FileName = combinedP,
+                            contentType = guide.Images[imgId].ContentType,
+                            gId = created._id
+                        };
+                        //-------ikelia picture block i duombaze--------------
+                        await _blocksRepository.CreatePblock(imageBlock);
+                        imgId++;
+                        break;
+                        //---------------------------------------------------
+                }
+            }
+            return Created("sukurta", guide1);
         }
-        //[HttpGet("{guideId}")]
-        //public async Task<ActionResult<Guides>> GetGuide(string guideId)
-        //{
-        //    var guide = await guidesRepository.GetGuide(guideId);
-
-        //    return Ok(guide);
-        //}
         private async Task<double> CountRating(string gid)
         {
             var responses = await _responsesRepository.GetResponses(gid);
@@ -91,15 +183,12 @@ namespace VirtualGuidePlatform.Controllers
                 var pblocks = await _blocksRepository.GetPblocks(item._id);
                 pblocks.Sort((x, y) => x.priority.CompareTo(y.priority));
                 var path = pblocks[0].URI;
-                //var path = "C:\\Users\\Marius\\Desktop\\Guide\\VirtualGuidePlatform\\VirtualGuidePlatform\\Images\\624575a2075fa8cc9616271cp0.jpeg";
-                var bytes = await System.IO.File.ReadAllBytesAsync(path);
-                FileContentResult file = File(bytes, pblocks[0].contentType, Path.GetFileName(path));
 
                 var rating = await CountRating(item._id);
                 Console.WriteLine("Vidutinis reitingas " + rating.ToString());
                 GuideAllDto changed = new GuideAllDto()
                 {
-                    Image = file,
+                    Image = path,
                     _id = item._id,
                     creatorName = "Vardas",
                     creatorLastName = "Pavarde",
@@ -130,30 +219,20 @@ namespace VirtualGuidePlatform.Controllers
 
             foreach(Pblocks image in pictures)
             {
-                var path = image.URI;
-                var bytes = await System.IO.File.ReadAllBytesAsync(path);
-                FileContentResult pfile = File(bytes, image.contentType, Path.GetFileName(path));
-
                 BlockDto picture = new BlockDto()
                 {
                     Type = "Image",
                     ID = image.priority,
-                    image = pfile,
                     pblock = image
                 };
                 blocks.Add(picture);
             }
             foreach (Vblocks video in videos)
             {
-                var path = video.URI;
-                var bytes = await System.IO.File.ReadAllBytesAsync(path);
-                FileContentResult vfile = File(bytes, video.contentType, Path.GetFileName(path));
-
                 BlockDto video1 = new BlockDto()
                 {
                     Type = "Video",
                     ID = video.priority,
-                    video = vfile,
                     vblock = video
                 };
                 blocks.Add(video1);
@@ -169,7 +248,6 @@ namespace VirtualGuidePlatform.Controllers
                 blocks.Add(text1);
             }
             blocks.Sort((x, y) => x.ID.CompareTo(y.ID));
-            Console.WriteLine(blocks.ElementAt(0).ID);
             var rating = await CountRating(guideId);
             GuideReturnDto guideToReturn = new GuideReturnDto()
             {
@@ -187,7 +265,6 @@ namespace VirtualGuidePlatform.Controllers
                 isFavourite = false,
                 blocks = blocks
             };
-
             return Ok(guideToReturn);
         }
     }

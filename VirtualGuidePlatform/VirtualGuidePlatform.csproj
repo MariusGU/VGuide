@@ -10,6 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Firebase.Auth" Version="1.0.0" />
+    <PackageReference Include="FirebaseStorage.net" Version="1.0.3" />
     <PackageReference Include="Google.Apis.Drive.v3" Version="1.56.0.2601" />
     <PackageReference Include="MongoDB.Driver" Version="2.15.0" />
   </ItemGroup>
