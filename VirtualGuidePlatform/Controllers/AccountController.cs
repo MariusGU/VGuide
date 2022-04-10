@@ -62,7 +62,6 @@ namespace VirtualGuidePlatform.Controllers
         public async Task<ActionResult<AccountsDto>> CreateOne(Accounts account)
         {
             await _accountsRepository.CreateAccount(account);
-
             AccountsDto acc = new AccountsDto() 
             {
                 _id = account._id,
@@ -74,9 +73,19 @@ namespace VirtualGuidePlatform.Controllers
                 savedguides = account.savedguides,
                 payedguides = account.payedguides
             };
-
-
             return Created("sukurta", acc);
+        }
+        [HttpPut("{userId}")]
+        public async Task<ActionResult<AccountsDto>> UpdateAccount(Accounts account, string userId)
+        {
+            var accountUpdated = await _accountsRepository.UpdateAccount(account, userId);
+
+            if(accountUpdated == null)
+            {
+                return BadRequest("Nepavyko pakeisti");
+            }
+
+            return Ok(accountUpdated);
         }
     }
 }

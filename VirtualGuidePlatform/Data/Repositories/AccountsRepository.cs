@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
@@ -16,6 +17,7 @@ namespace VirtualGuidePlatform.Data.Repositories
         Task<Accounts> GetAccount(string id);
         Task<List<Accounts>> GetAccounts();
         Task<Accounts> Login(string email, string password);
+        Task<AccountsDto> UpdateAccount(Accounts account, string id);
     }
 
     public class AccountsRepository : IAccountsRepository
@@ -61,6 +63,66 @@ namespace VirtualGuidePlatform.Data.Repositories
                 await _accountTable.ReplaceOneAsync(x => x._id == account._id, account);
             }
             return account;
+        }
+        private Accounts MapAccountUpdate(Accounts account, Accounts original)
+        {
+            Accounts mapped = original;
+            if(account._id != null)
+            {
+                mapped._id = account._id;
+            }
+            if (account.email != null)
+            {
+                mapped.email = account.email;
+            }
+            if (account.password != null)
+            {
+                mapped.password = account.password;
+            }
+            if (account.languages != null)
+            {
+                mapped.languages = account.languages;
+            }
+            if (account.followers != null)
+            {
+                mapped.followers = account.followers;
+            }
+            if (account.followed != null)
+            {
+                mapped.followed = account.followed;
+            }
+            if (account.ppicture != null)
+            {
+                mapped.ppicture = account.ppicture;
+            }
+            if (account.savedguides != null)
+            {
+                mapped.savedguides = account.savedguides;
+            }
+            if (account.payedguides != null)
+            {
+                mapped.payedguides = account.payedguides;
+            }
+            return mapped;
+        }
+        public async Task<AccountsDto> UpdateAccount(Accounts account, string id)
+        {
+            var obj = (await _accountTable.FindAsync(x => x._id == id)).FirstOrDefault();
+            if(obj == null)
+            {
+                return null;
+            }
+
+            var mapped = MapAccountUpdate(account, obj);
+
+            var acc = await _accountTable.ReplaceOneAsync(x => x._id == id, mapped);
+
+            if (acc.IsAcknowledged)
+            {
+                return new AccountsDto(mapped._id, mapped.email, mapped.languages, mapped.followers, mapped.followed, mapped.ppicture, mapped.savedguides, mapped.payedguides);
+            }
+
+            return null;
         }
     }
 }

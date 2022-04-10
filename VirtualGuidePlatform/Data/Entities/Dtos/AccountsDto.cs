@@ -26,5 +26,18 @@ namespace VirtualGuidePlatform.Data.Entities
         public string[] savedguides { get; set; }
         [BsonElement("payedguides")]
         public string[] payedguides { get; set; }
+
+        public AccountsDto(string id, string Email, string[] Languages, string[] Followers, string[] Followed, string Ppicture, string[] Savedguides, string[] Payedguides)
+        {
+            _id = id;
+            email = Email;
+            languages = Languages;
+            followers = Followers;
+            followed = Followed;
+            ppicture = Ppicture;
+            savedguides = Savedguides;
+            payedguides = Payedguides;
+        }
+        public AccountsDto() { }
     }
 }
