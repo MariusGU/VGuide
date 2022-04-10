@@ -87,5 +87,29 @@ namespace VirtualGuidePlatform.Controllers
 
             return Ok(accountUpdated);
         }
+        [HttpPut("follow/{userId}")]
+        public async Task<ActionResult<AccountsDto>> UpdateFollow(Accounts account, string userId)
+        {
+            var accountUpdated = await _accountsRepository.UpdateFollow(account, userId);
+
+            if (accountUpdated == null)
+            {
+                return BadRequest("Nepavyko pakeisti");
+            }
+
+            return Ok(accountUpdated);
+        }
+        [HttpPut("unfollow/{userId}")]
+        public async Task<ActionResult<AccountsDto>> UpdateUnfollow(Accounts account, string userId)
+        {
+            var accountUpdated = await _accountsRepository.UpdateUnfollow(account, userId);
+
+            if (accountUpdated == null)
+            {
+                return BadRequest("Nepavyko pakeisti");
+            }
+
+            return Ok(accountUpdated);
+        }
     }
 }

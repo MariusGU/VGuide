@@ -18,6 +18,8 @@ namespace VirtualGuidePlatform.Data.Repositories
         Task<List<Accounts>> GetAccounts();
         Task<Accounts> Login(string email, string password);
         Task<AccountsDto> UpdateAccount(Accounts account, string id);
+        Task<AccountsDto> UpdateFollow(Accounts account, string userId);
+        Task<AccountsDto> UpdateUnfollow(Accounts account, string userId);
     }
 
     public class AccountsRepository : IAccountsRepository
@@ -112,12 +114,97 @@ namespace VirtualGuidePlatform.Data.Repositories
             {
                 return null;
             }
-
             var mapped = MapAccountUpdate(account, obj);
 
             var acc = await _accountTable.ReplaceOneAsync(x => x._id == id, mapped);
 
             if (acc.IsAcknowledged)
+            {
+                return new AccountsDto(mapped._id, mapped.email, mapped.languages, mapped.followers, mapped.followed, mapped.ppicture, mapped.savedguides, mapped.payedguides);
+            }
+
+            return null;
+        }
+        public async Task<AccountsDto> UpdateFollow(Accounts account, string userId)
+        {
+            var useraccount = (await _accountTable.FindAsync(x => x._id == userId)).FirstOrDefault();
+            var creatoraccount = (await _accountTable.FindAsync(x => x._id == account.followed[0])).FirstOrDefault();
+            if (useraccount == null)
+            {
+                return null;
+            }
+
+            var userfollowed = AddToArray(account.followed[0], useraccount.followed);
+            useraccount.followed = userfollowed;
+            var acc = await _accountTable.ReplaceOneAsync(x => x._id == userId, useraccount);
+
+            var creatorfollowed = AddToArray( account.followed[0], creatoraccount.followers);
+            creatoraccount.followers = creatorfollowed;
+            var cacc = await _accountTable.ReplaceOneAsync(x => x._id == account.followed[0], creatoraccount);
+
+            var mapped = useraccount;
+
+            if (acc.IsAcknowledged && cacc.IsAcknowledged)
+            {
+                return new AccountsDto(mapped._id, mapped.email, mapped.languages, mapped.followers, mapped.followed, mapped.ppicture, mapped.savedguides, mapped.payedguides);
+            }
+
+            return null;
+        }
+        private string[] RemoveFromArray(string toremove, string[] removefrom)
+        {
+            int place = 0;
+            if (removefrom.Contains(toremove))
+            {
+                string[] removed = new string[removefrom.Length - 1];
+                for (int i = 0; i < removefrom.Length; i++)
+                {
+                    if (removefrom[i] != toremove)
+                    {
+                        removed[place] = removefrom[i];
+                        place++;
+                    }
+                }
+                return removed;
+            }
+            return removefrom;
+        }
+        private string[] AddToArray(string toadd, string[] intoAdd)
+        {
+            string[] added = new string[intoAdd.Length +1];
+            if (!intoAdd.Contains(toadd))
+            {
+                for(int i = 0; i < intoAdd.Length; i++)
+                {
+                    added[i] = intoAdd[i];
+                }
+                added[intoAdd.Length] = toadd;
+                return added;
+            }
+            Console.WriteLine(intoAdd.Length);
+
+            return intoAdd;
+        }
+        public async Task<AccountsDto> UpdateUnfollow(Accounts account, string userId)
+        {
+            var useraccount = (await _accountTable.FindAsync(x => x._id == userId)).FirstOrDefault();
+            var creatoraccount = (await _accountTable.FindAsync(x => x._id == account.followed[0])).FirstOrDefault();
+            if (useraccount == null)
+            {
+                return null;
+            }
+
+            var userunfollowed = RemoveFromArray(account.followed[0], useraccount.followed);
+            useraccount.followed = userunfollowed;
+            var acc = await _accountTable.ReplaceOneAsync(x => x._id == userId, useraccount);
+
+            var creatorunfollowed = RemoveFromArray(account.followed[0], creatoraccount.followers);
+            creatoraccount.followers = creatorunfollowed;
+            var cacc = await _accountTable.ReplaceOneAsync(x => x._id == account.followed[0], creatoraccount);
+
+            var mapped = useraccount;
+
+            if (acc.IsAcknowledged && cacc.IsAcknowledged)
             {
                 return new AccountsDto(mapped._id, mapped.email, mapped.languages, mapped.followers, mapped.followed, mapped.ppicture, mapped.savedguides, mapped.payedguides);
             }
