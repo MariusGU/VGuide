@@ -149,7 +149,7 @@ namespace VirtualGuidePlatform.Data.Repositories
             useraccount.followed = userfollowed;
             var acc = await _accountTable.ReplaceOneAsync(x => x._id == userId, useraccount);
 
-            var creatorfollowed = AddToArray( account.followed[0], creatoraccount.followers);
+            var creatorfollowed = AddToArray( userId, creatoraccount.followers);
             creatoraccount.followers = creatorfollowed;
             var cacc = await _accountTable.ReplaceOneAsync(x => x._id == account.followed[0], creatoraccount);
 
@@ -210,7 +210,7 @@ namespace VirtualGuidePlatform.Data.Repositories
             useraccount.followed = userunfollowed;
             var acc = await _accountTable.ReplaceOneAsync(x => x._id == userId, useraccount);
 
-            var creatorunfollowed = RemoveFromArray(account.followed[0], creatoraccount.followers);
+            var creatorunfollowed = RemoveFromArray(userId, creatoraccount.followers);
             creatoraccount.followers = creatorunfollowed;
             var cacc = await _accountTable.ReplaceOneAsync(x => x._id == account.followed[0], creatoraccount);
 
