@@ -111,7 +111,7 @@ namespace VirtualGuidePlatform.Controllers
 
             return Ok(accountUpdated);
         }
-        [HttpPost("saveguide/{userId}")]
+        [HttpPut("saveguide/{userId}")]
         public async Task<ActionResult<AccountsDto>> UpdateAddSaved(Accounts account, string userId)
         {
             var accountUpdated = await _accountsRepository.UpdateAddSaved(account, userId);
@@ -123,7 +123,7 @@ namespace VirtualGuidePlatform.Controllers
 
             return Ok(accountUpdated);
         }
-        [HttpPost("removesavedguide/{userId}")]
+        [HttpPut("removesavedguide/{userId}")]
         public async Task<ActionResult<AccountsDto>> UpdateRemoveSaved(Accounts account, string userId)
         {
             var accountUpdated = await _accountsRepository.UpdateAddSaved(account, userId);
