@@ -20,6 +20,8 @@ namespace VirtualGuidePlatform.Data.Repositories
         Task<AccountsDto> UpdateAccount(Accounts account, string id);
         Task<AccountsDto> UpdateFollow(Accounts account, string userId);
         Task<AccountsDto> UpdateUnfollow(Accounts account, string userId);
+        Task<AccountsDto> UpdateAddSaved(Accounts account, string userId);
+        Task<AccountsDto> UpdateRemoveSaved(Accounts account, string userId);
     }
 
     public class AccountsRepository : IAccountsRepository
