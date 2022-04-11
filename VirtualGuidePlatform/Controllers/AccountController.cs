@@ -26,7 +26,7 @@ namespace VirtualGuidePlatform.Controllers
             var account = await _accountsRepository.GetAccount(id);
             return account;
         }
-        [HttpGet]
+        [HttpPost("login")]
         public async Task<ActionResult<AccountsDto>> Login(Login login)
         {
             var obj = await _accountsRepository.Login(login.email, login.password);
@@ -35,6 +35,8 @@ namespace VirtualGuidePlatform.Controllers
                 AccountsDto acc = new AccountsDto()
                 {
                     _id = obj._id,
+                    firstname = obj.firstname,
+                    lastname = obj.lastname,
                     email = obj.email,
                     languages = obj.languages,
                     followers = obj.followers,
@@ -58,13 +60,21 @@ namespace VirtualGuidePlatform.Controllers
 
             return all;
         }
-        [HttpPost]
+        [HttpPost("register")]
         public async Task<ActionResult<AccountsDto>> CreateOne(Accounts account)
         {
+            account.languages = new string[0];
+            account.followers = new string[0];
+            account.followed = new string[0];
+            account.ppicture = "";
+            account.savedguides = new string[0];
+            account.payedguides = new string[0];
             await _accountsRepository.CreateAccount(account);
             AccountsDto acc = new AccountsDto() 
             {
                 _id = account._id,
+                firstname = account.firstname,
+                lastname = account.lastname,
                 email = account.email,
                 languages = account.languages,
                 followers = account.followers,
@@ -88,9 +98,9 @@ namespace VirtualGuidePlatform.Controllers
             return Ok(accountUpdated);
         }
         [HttpPut("follow/{userId}")]
-        public async Task<ActionResult<AccountsDto>> UpdateFollow(Accounts account, string userId)
+        public async Task<ActionResult<AccountsDto>> UpdateFollow([FromBody]string creatorID, string userId)
         {
-            var accountUpdated = await _accountsRepository.UpdateFollow(account, userId);
+            var accountUpdated = await _accountsRepository.UpdateFollow(creatorID, userId);
 
             if (accountUpdated == null)
             {
@@ -100,9 +110,9 @@ namespace VirtualGuidePlatform.Controllers
             return Ok(accountUpdated);
         }
         [HttpPut("unfollow/{userId}")]
-        public async Task<ActionResult<AccountsDto>> UpdateUnfollow(Accounts account, string userId)
+        public async Task<ActionResult<AccountsDto>> UpdateUnfollow([FromBody] string creatorID, string userId)
         {
-            var accountUpdated = await _accountsRepository.UpdateUnfollow(account, userId);
+            var accountUpdated = await _accountsRepository.UpdateUnfollow(creatorID, userId);
 
             if (accountUpdated == null)
             {
@@ -111,10 +121,10 @@ namespace VirtualGuidePlatform.Controllers
 
             return Ok(accountUpdated);
         }
-        [HttpPost("saveguide/{userId}")]
-        public async Task<ActionResult<AccountsDto>> UpdateAddSaved(Accounts account, string userId)
+        [HttpPut("saveguide/{userId}")]
+        public async Task<ActionResult<AccountsDto>> UpdateAddSaved([FromBody]string guideID, string userId)
         {
-            var accountUpdated = await _accountsRepository.UpdateAddSaved(account, userId);
+            var accountUpdated = await _accountsRepository.UpdateAddSaved(guideID, userId);
 
             if (accountUpdated == null)
             {
@@ -123,10 +133,10 @@ namespace VirtualGuidePlatform.Controllers
 
             return Ok(accountUpdated);
         }
-        [HttpPost("removesavedguide/{userId}")]
-        public async Task<ActionResult<AccountsDto>> UpdateRemoveSaved(Accounts account, string userId)
+        [HttpPut("removesavedguide/{userId}")]
+        public async Task<ActionResult<AccountsDto>> UpdateRemoveSaved([FromBody]string guideID, string userId)
         {
-            var accountUpdated = await _accountsRepository.UpdateAddSaved(account, userId);
+            var accountUpdated = await _accountsRepository.UpdateRemoveSaved(guideID, userId);
 
             if (accountUpdated == null)
             {

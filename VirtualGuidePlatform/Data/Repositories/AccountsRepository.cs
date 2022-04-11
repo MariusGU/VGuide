@@ -18,10 +18,10 @@ namespace VirtualGuidePlatform.Data.Repositories
         Task<List<Accounts>> GetAccounts();
         Task<Accounts> Login(string email, string password);
         Task<AccountsDto> UpdateAccount(Accounts account, string id);
-        Task<AccountsDto> UpdateFollow(Accounts account, string userId);
-        Task<AccountsDto> UpdateUnfollow(Accounts account, string userId);
-        Task<AccountsDto> UpdateAddSaved(Accounts account, string userId);
-        Task<AccountsDto> UpdateRemoveSaved(Accounts account, string userId);
+        Task<AccountsDto> UpdateFollow(string creatorID, string userId);
+        Task<AccountsDto> UpdateUnfollow(string creatorID, string userId);
+        Task<AccountsDto> UpdateAddSaved(string guideID, string userId);
+        Task<AccountsDto> UpdateRemoveSaved(string guideID, string userId);
     }
 
     public class AccountsRepository : IAccountsRepository
@@ -136,22 +136,22 @@ namespace VirtualGuidePlatform.Data.Repositories
 
             return null;
         }
-        public async Task<AccountsDto> UpdateFollow(Accounts account, string userId)
+        public async Task<AccountsDto> UpdateFollow(string creatorID, string userId)
         {
             var useraccount = (await _accountTable.FindAsync(x => x._id == userId)).FirstOrDefault();
-            var creatoraccount = (await _accountTable.FindAsync(x => x._id == account.followed[0])).FirstOrDefault();
+            var creatoraccount = (await _accountTable.FindAsync(x => x._id == creatorID)).FirstOrDefault();
             if (useraccount == null)
             {
                 return null;
             }
 
-            var userfollowed = AddToArray(account.followed[0], useraccount.followed);
+            var userfollowed = AddToArray(creatorID, useraccount.followed);
             useraccount.followed = userfollowed;
             var acc = await _accountTable.ReplaceOneAsync(x => x._id == userId, useraccount);
 
             var creatorfollowed = AddToArray( userId, creatoraccount.followers);
             creatoraccount.followers = creatorfollowed;
-            var cacc = await _accountTable.ReplaceOneAsync(x => x._id == account.followed[0], creatoraccount);
+            var cacc = await _accountTable.ReplaceOneAsync(x => x._id == creatorID, creatoraccount);
 
             var mapped = useraccount;
 
@@ -197,22 +197,22 @@ namespace VirtualGuidePlatform.Data.Repositories
 
             return intoAdd;
         }
-        public async Task<AccountsDto> UpdateUnfollow(Accounts account, string userId)
+        public async Task<AccountsDto> UpdateUnfollow(string creatorID, string userId)
         {
             var useraccount = (await _accountTable.FindAsync(x => x._id == userId)).FirstOrDefault();
-            var creatoraccount = (await _accountTable.FindAsync(x => x._id == account.followed[0])).FirstOrDefault();
+            var creatoraccount = (await _accountTable.FindAsync(x => x._id == creatorID)).FirstOrDefault();
             if (useraccount == null)
             {
                 return null;
             }
 
-            var userunfollowed = RemoveFromArray(account.followed[0], useraccount.followed);
+            var userunfollowed = RemoveFromArray(creatorID, useraccount.followed);
             useraccount.followed = userunfollowed;
             var acc = await _accountTable.ReplaceOneAsync(x => x._id == userId, useraccount);
 
             var creatorunfollowed = RemoveFromArray(userId, creatoraccount.followers);
             creatoraccount.followers = creatorunfollowed;
-            var cacc = await _accountTable.ReplaceOneAsync(x => x._id == account.followed[0], creatoraccount);
+            var cacc = await _accountTable.ReplaceOneAsync(x => x._id == creatorID, creatoraccount);
 
             var mapped = useraccount;
 
@@ -224,7 +224,7 @@ namespace VirtualGuidePlatform.Data.Repositories
 
             return null;
         }
-        public async Task<AccountsDto> UpdateAddSaved(Accounts account, string userId)
+        public async Task<AccountsDto> UpdateAddSaved(string guideID, string userId)
         {
             var useraccount = (await _accountTable.FindAsync(x => x._id == userId)).FirstOrDefault();
             if (useraccount == null)
@@ -232,7 +232,7 @@ namespace VirtualGuidePlatform.Data.Repositories
                 return null;
             }
 
-            var savedGuides = AddToArray(account.savedguides[0], useraccount.savedguides);
+            var savedGuides = AddToArray(guideID, useraccount.savedguides);
             useraccount.savedguides = savedGuides;
             var acc = await _accountTable.ReplaceOneAsync(x => x._id == userId, useraccount);
 
@@ -245,7 +245,7 @@ namespace VirtualGuidePlatform.Data.Repositories
             }
             return null;
         }
-        public async Task<AccountsDto> UpdateRemoveSaved(Accounts account, string userId)
+        public async Task<AccountsDto> UpdateRemoveSaved(string guideID, string userId)
         {
             var useraccount = (await _accountTable.FindAsync(x => x._id == userId)).FirstOrDefault();
             if (useraccount == null)
@@ -253,7 +253,7 @@ namespace VirtualGuidePlatform.Data.Repositories
                 return null;
             }
 
-            var savedGuides = RemoveFromArray(account.savedguides[0], useraccount.savedguides);
+            var savedGuides = RemoveFromArray(guideID, useraccount.savedguides);
             useraccount.savedguides = savedGuides;
             var acc = await _accountTable.ReplaceOneAsync(x => x._id == userId, useraccount);
 

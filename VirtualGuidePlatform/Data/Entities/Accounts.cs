@@ -14,24 +14,24 @@ namespace VirtualGuidePlatform.Data.Entities
         [BsonRepresentation(BsonType.ObjectId)]
         public string? _id { get; set; }
         [BsonElement("firstname")]
-        public string firstname { get; set; }
+        public string ?firstname { get; set; }
         [BsonElement("lastname")]
-        public string lastname { get; set; }
+        public string? lastname { get; set; }
         [BsonElement("email")]
-        public string email { get; set; }
+        public string? email { get; set; }
         [BsonElement("password")]
-        public string password { get; set; }
+        public string? password { get; set; }
         [BsonElement("languages")]
-        public string[] languages { get; set; }
+        public string[]? languages { get; set; }
         [BsonElement("followers")]
-        public string[] followers { get; set; }
+        public string[]? followers { get; set; }
         [BsonElement("followed")]
-        public string[] followed { get; set; }
+        public string[]? followed { get; set; }
         [BsonElement("ppicture")]
-        public string ppicture { get; set; }
+        public string? ppicture { get; set; }
         [BsonElement("savedguides")]
-        public string[] savedguides { get; set; }
+        public string[]? savedguides { get; set; }
         [BsonElement("payedguides")]
-        public string[] payedguides { get; set; }
+        public string[]? payedguides { get; set; }
     }
 }
