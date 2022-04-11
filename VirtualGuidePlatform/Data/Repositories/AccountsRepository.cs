@@ -73,6 +73,14 @@ namespace VirtualGuidePlatform.Data.Repositories
             {
                 mapped._id = account._id;
             }
+            if (account.firstname != null)
+            {
+                mapped.firstname = account.firstname;
+            }
+            if (account.lastname != null)
+            {
+                mapped.lastname = account.lastname;
+            }
             if (account.email != null)
             {
                 mapped.email = account.email;
@@ -120,7 +128,8 @@ namespace VirtualGuidePlatform.Data.Repositories
 
             if (acc.IsAcknowledged)
             {
-                return new AccountsDto(mapped._id, mapped.email, mapped.languages, mapped.followers, mapped.followed, mapped.ppicture, mapped.savedguides, mapped.payedguides);
+                return new AccountsDto(mapped._id, mapped.firstname, mapped.lastname, mapped.email, mapped.languages, 
+                    mapped.followers, mapped.followed, mapped.ppicture, mapped.savedguides, mapped.payedguides);
             }
 
             return null;
@@ -146,7 +155,8 @@ namespace VirtualGuidePlatform.Data.Repositories
 
             if (acc.IsAcknowledged && cacc.IsAcknowledged)
             {
-                return new AccountsDto(mapped._id, mapped.email, mapped.languages, mapped.followers, mapped.followed, mapped.ppicture, mapped.savedguides, mapped.payedguides);
+                return new AccountsDto(mapped._id, mapped.firstname, mapped.lastname, mapped.email, mapped.languages, 
+                    mapped.followers, mapped.followed, mapped.ppicture, mapped.savedguides, mapped.payedguides);
             }
 
             return null;
@@ -206,9 +216,52 @@ namespace VirtualGuidePlatform.Data.Repositories
 
             if (acc.IsAcknowledged && cacc.IsAcknowledged)
             {
-                return new AccountsDto(mapped._id, mapped.email, mapped.languages, mapped.followers, mapped.followed, mapped.ppicture, mapped.savedguides, mapped.payedguides);
+                return new AccountsDto(mapped._id, mapped.firstname, mapped.lastname, mapped.email, mapped.languages,
+                    mapped.followers, mapped.followed, mapped.ppicture, mapped.savedguides, mapped.payedguides);
             }
 
+            return null;
+        }
+        public async Task<AccountsDto> UpdateAddSaved(Accounts account, string userId)
+        {
+            var useraccount = (await _accountTable.FindAsync(x => x._id == userId)).FirstOrDefault();
+            if (useraccount == null)
+            {
+                return null;
+            }
+
+            var savedGuides = AddToArray(account.savedguides[0], useraccount.savedguides);
+            useraccount.savedguides = savedGuides;
+            var acc = await _accountTable.ReplaceOneAsync(x => x._id == userId, useraccount);
+
+            var mapped = useraccount;
+
+            if (acc.IsAcknowledged)
+            {
+                return new AccountsDto(mapped._id, mapped.firstname, mapped.lastname, mapped.email, mapped.languages,
+                    mapped.followers, mapped.followed, mapped.ppicture, mapped.savedguides, mapped.payedguides);
+            }
+            return null;
+        }
+        public async Task<AccountsDto> UpdateRemoveSaved(Accounts account, string userId)
+        {
+            var useraccount = (await _accountTable.FindAsync(x => x._id == userId)).FirstOrDefault();
+            if (useraccount == null)
+            {
+                return null;
+            }
+
+            var savedGuides = RemoveFromArray(account.savedguides[0], useraccount.savedguides);
+            useraccount.savedguides = savedGuides;
+            var acc = await _accountTable.ReplaceOneAsync(x => x._id == userId, useraccount);
+
+            var mapped = useraccount;
+
+            if (acc.IsAcknowledged)
+            {
+                return new AccountsDto(mapped._id, mapped.firstname, mapped.lastname, mapped.email, mapped.languages,
+                    mapped.followers, mapped.followed, mapped.ppicture, mapped.savedguides, mapped.payedguides);
+            }
             return null;
         }
     }

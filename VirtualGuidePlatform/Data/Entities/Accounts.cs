@@ -13,6 +13,10 @@ namespace VirtualGuidePlatform.Data.Entities
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string? _id { get; set; }
+        [BsonElement("firstname")]
+        public string firstname { get; set; }
+        [BsonElement("lastname")]
+        public string lastname { get; set; }
         [BsonElement("email")]
         public string email { get; set; }
         [BsonElement("password")]
