@@ -29,7 +29,7 @@ namespace VirtualGuidePlatform.Controllers
             _filesRepository = filesRepository;
         }
         [HttpPost]
-        private async Task<ActionResult<Guides>> CreateGuideWithAllData([FromForm] PostGuide guide)
+        public async Task<ActionResult<Guides>> CreateGuideWithAllData([FromForm] PostGuide guide)
         {
             Console.WriteLine("ieina");
             int imgId = 0;
