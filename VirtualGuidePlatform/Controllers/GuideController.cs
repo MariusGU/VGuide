@@ -45,14 +45,14 @@ namespace VirtualGuidePlatform.Controllers
             //======Gido sukurimas=========
             Guides guide1 = new Guides()
             {
-                gCreatorId = 1,
-                locationXY = "dsadsad",
+                gCreatorId = guide.CreatorId,
+                locationXY = guide.LocationXY,
                 description = guide.Description,
-                city = "Kaunas",
+                city = guide.City,
                 name = guide.Title,
                 language = guide.Language,
                 uDate = DateTime.Now,
-                price = 1.99
+                price = guide.Price
             };
             //==============sukuria nauja gida i duombaze==================
             var created = await guidesRepository.CreateGuide(guide1);

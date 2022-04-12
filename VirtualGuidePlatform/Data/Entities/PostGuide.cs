@@ -16,10 +16,15 @@ namespace VirtualGuidePlatform.Data.Entities
         public IFormFile[] Videos { get; set; }
         public string[] Texts { get; set; }
         public string[] Blocks { get; set; }
-        public string Title { get; set; }
+
+        public int CreatorId { get; set; }
+        public string LocationXY { get; set; }
         public string Description { get; set; }
+        public string City { get; set; }
+        public string Title { get; set; }
         public string Language { get; set; }
         public double Price { get; set; }
+
         public List<Block>? DeserializedBlocks { get; set; }
         public void DeserializeBlocks()
         {
