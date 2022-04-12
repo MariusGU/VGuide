@@ -29,6 +29,7 @@ namespace VirtualGuidePlatform.Controllers
             _filesRepository = filesRepository;
         }
         [HttpPost]
+        [RequestSizeLimit(100_000_000)]
         public async Task<ActionResult<Guides>> CreateGuideWithAllData([FromForm] PostGuide guide)
         {
             Console.WriteLine("ieina");
