@@ -17,7 +17,7 @@ namespace VirtualGuidePlatform.Data.Entities
         public string[] Texts { get; set; }
         public string[] Blocks { get; set; }
 
-        public int CreatorId { get; set; }
+        public string CreatorId { get; set; }
         public string LocationXY { get; set; }
         public string Description { get; set; }
         public string City { get; set; }

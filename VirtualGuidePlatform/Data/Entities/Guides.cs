@@ -12,7 +12,7 @@ namespace VirtualGuidePlatform.Data.Entities
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string? _id { get; set; }
-        public int gCreatorId { get; set; }
+        public string gCreatorId { get; set; }
         public string locationXY { get; set; }
         public string description { get; set; }
         public string city { get; set; }
