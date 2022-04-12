@@ -50,7 +50,7 @@ namespace VirtualGuidePlatform.Controllers
 
             Guides guide1 = new Guides()
             {
-                gCreatorId = 1,
+                gCreatorId = "dddd",
                 locationXY = "dsadsad",
                 description = guide.Description,
                 city = "Kaunas",
