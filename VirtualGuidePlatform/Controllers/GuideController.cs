@@ -49,7 +49,8 @@ namespace VirtualGuidePlatform.Controllers
             Guides guide1 = new Guides()
             {
                 gCreatorId = guide.CreatorId,
-                locationXY = guide.LocationXY,
+                latitude = guide.latitude,
+                longtitude = guide.longtitude,
                 description = guide.Description,
                 city = guide.City,
                 name = guide.Title,
@@ -198,6 +199,8 @@ namespace VirtualGuidePlatform.Controllers
                     creatorName = creator.firstname,
                     creatorLastName = creator.lastname,
                     creatorId = item.gCreatorId,
+                    latitude = item.latitude,
+                    longtitude = item.longtitude,
                     description = item.description,
                     city = item.city,
                     title = item.name,
@@ -264,6 +267,8 @@ namespace VirtualGuidePlatform.Controllers
                 creatorLastName = creator.lastname,
                 creatorId = guide.gCreatorId,
                 description = guide.description,
+                latitude = guide.latitude,
+                longtitude = guide.longtitude, 
                 city = guide.city,
                 title = guide.name,
                 language = guide.language,

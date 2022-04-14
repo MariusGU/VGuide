@@ -17,6 +17,8 @@ namespace VirtualGuidePlatform.Data.Entities.Dtos
         public string creatorLastName { get; set; }
         public string creatorId { get; set; }
         public string description { get; set; }
+        public double latitude { get; set; }
+        public double longtitude { get; set; }
         public string city { get; set; }
         public string title { get; set; }
         public string language { get; set; }

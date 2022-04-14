@@ -13,7 +13,8 @@ namespace VirtualGuidePlatform.Data.Entities
         [BsonRepresentation(BsonType.ObjectId)]
         public string? _id { get; set; }
         public string gCreatorId { get; set; }
-        public Location locationXY { get; set; }
+        public double latitude { get; set; }
+        public double longtitude { get; set; }
         public string description { get; set; }
         public string city { get; set; }
         public string name { get; set; }

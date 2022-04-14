@@ -20,6 +20,8 @@ namespace VirtualGuidePlatform.Data.Entities.Dtos
         public string description { get; set; }
         public string city { get; set; }
         public string title { get; set; }
+        public double latitude { get; set; }
+        public double longtitude { get; set; }
         public string language { get; set; }
         public DateTime uDate { get; set; }
         public double price { get; set; }
