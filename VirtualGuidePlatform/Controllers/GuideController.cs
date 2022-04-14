@@ -20,28 +20,30 @@ namespace VirtualGuidePlatform.Controllers
         private readonly IResponsesRepository _responsesRepository;
         private readonly IBlocksRepository _blocksRepository;
         private readonly IFilesRepository _filesRepository;
+        private readonly IAccountsRepository _accountsRepository;
 
-        public GuideController(IGuidesRepository guidesRepository, IResponsesRepository responsesRepository, IBlocksRepository blocksRepository, IFilesRepository filesRepository)
+
+        public GuideController(IGuidesRepository guidesRepository, IResponsesRepository responsesRepository, IBlocksRepository blocksRepository, IFilesRepository filesRepository, IAccountsRepository accountsRepository)
         {
             this.guidesRepository = guidesRepository;
             _responsesRepository = responsesRepository;
             _blocksRepository = blocksRepository;
             _filesRepository = filesRepository;
+            _accountsRepository = accountsRepository;
         }
         [HttpPost]
         [RequestSizeLimit(100_000_000)]
         public async Task<ActionResult<Guides>> CreateGuideWithAllData([FromForm] PostGuide guide)
         {
-            Console.WriteLine("ieina");
             int imgId = 0;
             int videoId = 0;
             int textId = 0;
             guide.DeserializeBlocks();
 
-            Console.WriteLine("Title: {0}", guide.Title);
-            Console.WriteLine("Description: {0}", guide.Description);
-            Console.WriteLine("Price: {0}", guide.Price);
-            Console.WriteLine("Language: {0}", guide.Language);
+            //Console.WriteLine("Title: {0}", guide.Title);
+            //Console.WriteLine("Description: {0}", guide.Description);
+            //Console.WriteLine("Price: {0}", guide.Price);
+            //Console.WriteLine("Language: {0}", guide.Language);
 
             //======Gido sukurimas=========
             Guides guide1 = new Guides()
@@ -53,7 +55,8 @@ namespace VirtualGuidePlatform.Controllers
                 name = guide.Title,
                 language = guide.Language,
                 uDate = DateTime.Now,
-                price = guide.Price
+                price = guide.Price,
+                visible = guide.Visible
             };
             //==============sukuria nauja gida i duombaze==================
             var created = await guidesRepository.CreateGuide(guide1);
@@ -86,10 +89,9 @@ namespace VirtualGuidePlatform.Controllers
                         string combinedV = created._id + "v" + videoId.ToString() + "." + splitTypeV[1];
                         //------------ikelia video faila i Firebase storage
                         var videoFileID = await _filesRepository.UploadFileToFirebase(guide.Videos[videoId], combinedV, "videos");
-                        Console.WriteLine(videoFileID);
                         if (videoFileID == "")
                         {
-                            return BadRequest("Nepavyko ikelti video i Google drive");
+                            return BadRequest("Nepavyko ikelti video");
                         }
                         //----------------Sukuria video bloka------------------
                         Vblocks videoBlock = new Vblocks
@@ -114,7 +116,7 @@ namespace VirtualGuidePlatform.Controllers
                         var pictureFileID = await _filesRepository.UploadFileToFirebase(guide.Images[imgId], combinedP, "pictures");
                         if (pictureFileID == "")
                         {
-                            return BadRequest("Nepavyko ikelti paveikslelio i Google drive");
+                            return BadRequest("Nepavyko ikelti paveikslelio");
                         }
                         //sukuria picture block ikelimui i duombaze
                         Pblocks imageBlock = new Pblocks
@@ -167,7 +169,7 @@ namespace VirtualGuidePlatform.Controllers
             }
             else
             {
-                List<Guides> latestGuides = guides.GetRange(1, 2);
+                List<Guides> latestGuides = guides.GetRange(0, 100);
                 latestGuides.Sort((x, y) => y.uDate.CompareTo(x.uDate));
 
                 foreach(Guides item in latestGuides)
@@ -186,14 +188,16 @@ namespace VirtualGuidePlatform.Controllers
                 var path = pblocks[0].URI;
 
                 var rating = await CountRating(item._id);
+                var creator = await _accountsRepository.GetCreatorInfoAsync(item.gCreatorId);
+
                 Console.WriteLine("Vidutinis reitingas " + rating.ToString());
                 GuideAllDto changed = new GuideAllDto()
                 {
                     Image = path,
                     _id = item._id,
-                    creatorName = "Vardas",
-                    creatorLastName = "Pavarde",
-                    creatorId = item.gCreatorId.ToString(),
+                    creatorName = creator.firstname,
+                    creatorLastName = creator.lastname,
+                    creatorId = item.gCreatorId,
                     description = item.description,
                     city = item.city,
                     title = item.name,
@@ -201,7 +205,8 @@ namespace VirtualGuidePlatform.Controllers
                     uDate = item.uDate,
                     price = item.price,
                     rating = rating,
-                    isFavourite = false
+                    isFavourite = false,
+                    visible = item.visible
                 };
                 guidesToReturn.Add(changed);
             }
@@ -211,6 +216,7 @@ namespace VirtualGuidePlatform.Controllers
         public async Task<ActionResult<GuideReturnDto>> GetGuide(string guideId)
         {
             var guide = await guidesRepository.GetGuide(guideId);
+            var creator = await _accountsRepository.GetCreatorInfoAsync(guide.gCreatorId);
 
             var pictures = await _blocksRepository.GetPblocks(guideId);
             var videos = await _blocksRepository.GetVblocks(guideId);
@@ -250,12 +256,13 @@ namespace VirtualGuidePlatform.Controllers
             }
             blocks.Sort((x, y) => x.ID.CompareTo(y.ID));
             var rating = await CountRating(guideId);
+
             GuideReturnDto guideToReturn = new GuideReturnDto()
             {
                 _id = guide._id,
-                creatorName = "Name",
-                creatorLastName = "LastName",
-                creatorId = guide.gCreatorId.ToString(),
+                creatorName = creator.firstname,
+                creatorLastName = creator.lastname,
+                creatorId = guide.gCreatorId,
                 description = guide.description,
                 city = guide.city,
                 title = guide.name,
@@ -264,6 +271,7 @@ namespace VirtualGuidePlatform.Controllers
                 price = guide.price,
                 rating = rating,
                 isFavourite = false,
+                visible = guide.visible,
                 blocks = blocks
             };
             return Ok(guideToReturn);

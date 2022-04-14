@@ -18,12 +18,13 @@ namespace VirtualGuidePlatform.Data.Entities
         public string[] Blocks { get; set; }
 
         public string CreatorId { get; set; }
-        public string LocationXY { get; set; }
+        public Location LocationXY { get; set; }
         public string Description { get; set; }
         public string City { get; set; }
         public string Title { get; set; }
         public string Language { get; set; }
         public double Price { get; set; }
+        public bool Visible { get; set; }
 
         public List<Block>? DeserializedBlocks { get; set; }
         public void DeserializeBlocks()

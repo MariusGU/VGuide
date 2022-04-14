@@ -1,18 +1,19 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using VirtualGuidePlatform.Data.Entities.Blocks;
 
 namespace VirtualGuidePlatform.Data.Entities.Dtos
 {
-    public class GuideAllDto
+    public class GuideReturnDto
     {
-        public string Image { get; set; }
-        public string _id { get; set; }
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? _id { get; set; }
         public string creatorName { get; set; }
         public string creatorLastName { get; set; }
         public string creatorId { get; set; }
@@ -24,5 +25,7 @@ namespace VirtualGuidePlatform.Data.Entities.Dtos
         public double price { get; set; }
         public double rating { get; set; }
         public bool isFavourite { get; set; }
+        public bool visible { get; set; }
+        public List<BlockDto> blocks { get; set; }
     }
 }
