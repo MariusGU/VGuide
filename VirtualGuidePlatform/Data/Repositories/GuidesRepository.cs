@@ -14,6 +14,7 @@ namespace VirtualGuidePlatform.Data.Repositories
         Task<Guides> CreateGuide(Guides guide);
         Task<Guides> GetGuide(string id);
         Task<List<Guides>> GetGuides();
+        Task<List<Guides>> GetUserGuides(string userid);
     }
 
     public class GuidesRepository : IGuidesRepository
@@ -38,6 +39,16 @@ namespace VirtualGuidePlatform.Data.Repositories
         public async Task<List<Guides>> GetGuides()
         {
             return await _guidesTable.AsQueryable().ToListAsync();
+        }
+        public async Task<List<Guides>> GetUserGuides(string userid)
+        {
+            var res = await _guidesTable.FindAsync(x => x.gCreatorId == userid);
+            var items = res.ToList();
+            if(items.Count > 0)
+            {
+                return items;
+            }
+            return null;
         }
         public async Task<Guides> CreateGuide(Guides guide)
         {
