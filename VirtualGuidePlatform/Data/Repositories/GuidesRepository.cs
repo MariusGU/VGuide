@@ -15,6 +15,8 @@ namespace VirtualGuidePlatform.Data.Repositories
         Task<Guides> GetGuide(string id);
         Task<List<Guides>> GetGuides();
         Task<List<Guides>> GetUserGuides(string userid);
+        Task<Guides> SetVisible(string guideId);
+        Task<Guides> SetInvisible(string guideId);
     }
 
     public class GuidesRepository : IGuidesRepository
@@ -64,6 +66,44 @@ namespace VirtualGuidePlatform.Data.Repositories
             }
 
             return guide;
+        }
+        public async Task<Guides> SetVisible(string guideId)
+        {
+            var obj = (await _guidesTable.FindAsync(x => x._id == guideId)).FirstOrDefault();
+
+            if (obj == null)
+            {
+                return null;
+            }
+
+            Guides updated = obj;
+            updated.visible = true;
+
+            var res = await _guidesTable.ReplaceOneAsync(x => x._id == guideId, updated);
+            if (res.IsAcknowledged)
+            {
+                return updated;
+            }
+            return null;
+        }
+        public async Task<Guides> SetInvisible(string guideId)
+        {
+            var obj = (await _guidesTable.FindAsync(x => x._id == guideId)).FirstOrDefault();
+
+            if (obj == null)
+            {
+                return null;
+            }
+
+            Guides updated = obj;
+            updated.visible = false;
+
+            var res = await _guidesTable.ReplaceOneAsync(x => x._id == guideId, updated);
+            if (res.IsAcknowledged)
+            {
+                return updated;
+            }
+            return null;
         }
     }
 }

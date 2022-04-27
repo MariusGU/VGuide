@@ -372,5 +372,31 @@ namespace VirtualGuidePlatform.Controllers
             }
             return Ok(guidesToReturn);
         }
+        [HttpPut("setvisible/{guideid}")]
+        public async Task<ActionResult<IEnumerable<GuideAllDto>>> SetGuideVisible(string guideid)
+        {
+
+            var guide = await guidesRepository.SetVisible(guideid);
+            
+            if(guide != null)
+            {
+                return Ok(guide);
+            }
+
+            return NotFound();
+        }
+        [HttpPut("setinvisible/{guideid}")]
+        public async Task<ActionResult<IEnumerable<GuideAllDto>>> SetGuideInvisible(string guideid)
+        {
+
+            var guide = await guidesRepository.SetInvisible(guideid);
+
+            if (guide != null)
+            {
+                return Ok(guide);
+            }
+
+            return NotFound();
+        }
     }
 }
