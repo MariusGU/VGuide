@@ -40,7 +40,13 @@ namespace VirtualGuidePlatform.Data.Repositories
         }
         public async Task<List<Guides>> GetGuides()
         {
-            return await _guidesTable.AsQueryable().ToListAsync();
+            var res = await _guidesTable.FindAsync(x => x.visible == true);
+            var items = res.ToList();
+            if(items.Count > 0)
+            {
+                return items;
+            }
+            return null;
         }
         public async Task<List<Guides>> GetUserGuides(string userid)
         {

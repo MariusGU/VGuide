@@ -164,6 +164,11 @@ namespace VirtualGuidePlatform.Controllers
         {
             var guides = await guidesRepository.GetGuides();
 
+            if(guides == null)
+            {
+                return NotFound();
+            }
+
             if(guides.Count <= 100)
             {
                 guides.Sort((x, y) => y.uDate.CompareTo(x.uDate));
