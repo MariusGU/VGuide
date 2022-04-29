@@ -56,5 +56,19 @@ namespace VirtualGuidePlatform.Data.Repositories
             }
             return "";
         }
+        //public async Task<IFormFile> GetFileByUri(string uri)
+        //{
+        //    var auth = new FirebaseAuthProvider(new FirebaseConfig(_configuration.GetConnectionString("FirebaseApiKey")));
+        //    var a = await auth.SignInWithEmailAndPasswordAsync(_configuration.GetConnectionString("FirebaseEmail"), 
+        //        _configuration.GetConnectionString("FirebasePass"));
+
+        //    var task = new FirebaseStorage(_configuration.GetConnectionString("FirebaseBucket"),
+        //            new FirebaseStorageOptions
+        //            {
+        //                AuthTokenAsyncFactory = () => Task.FromResult(a.FirebaseToken),
+
+        //            }
+        //            ).
+        //}
     }
 }

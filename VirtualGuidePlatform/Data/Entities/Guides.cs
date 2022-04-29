@@ -22,5 +22,6 @@ namespace VirtualGuidePlatform.Data.Entities
         public DateTime uDate { get; set; }
         public double price { get; set; }
         public bool visible { get; set; }
+        public string category { get; set; }
     }
 }

@@ -1,18 +1,16 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace VirtualGuidePlatform.Data.Entities
 {
-    public class Block
-    {
-        public int ID { get; set; }
-        public string Type { get; set; }
-    }
-
-    public class PostGuide
+    public class UpdateGuide
     {
         public IFormFile[] Images { get; set; }
+        public string[] Uris { get; set; }
         public IFormFile[] Videos { get; set; }
         public string[] Texts { get; set; }
         public string[] Blocks { get; set; }
@@ -32,12 +30,11 @@ namespace VirtualGuidePlatform.Data.Entities
         public void DeserializeBlocks()
         {
             this.DeserializedBlocks = new List<Block>();
-            foreach(var block in this.Blocks)
+            foreach (var block in this.Blocks)
             {
                 Block deserialized = JsonSerializer.Deserialize<Block>(block);
                 this.DeserializedBlocks.Add(deserialized);
             }
         }
     }
-    
 }

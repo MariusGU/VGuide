@@ -9,6 +9,7 @@ using VirtualGuidePlatform.Data.Entities;
 using VirtualGuidePlatform.Data.Entities.Blocks;
 using VirtualGuidePlatform.Data.Entities.Dtos;
 using VirtualGuidePlatform.Data.Repositories;
+using static System.Net.WebRequestMethods;
 
 namespace VirtualGuidePlatform.Controllers
 {
@@ -57,11 +58,119 @@ namespace VirtualGuidePlatform.Controllers
                 language = guide.Language,
                 uDate = DateTime.Now,
                 price = guide.Price,
-                visible = guide.Visible
+                visible = guide.Visible,
+                category = guide.Category
             };
             //==============sukuria nauja gida i duombaze==================
             var created = await guidesRepository.CreateGuide(guide1);
             if(created == null)
+            {
+                return BadRequest("Guides is not created");
+            }
+            //====================================
+            //----------------------------------
+            //======================Isparsina multipartform data==================
+            for (int i = 0; i < guide.DeserializedBlocks.Count; i++)
+            {
+                var block = guide.DeserializedBlocks[i];
+                switch (block.Type)
+                {
+                    //---------------------------------------------------------------------------
+                    //teksto bloko sukurimas ir issugojimas i duomenu baze
+                    case "Text":
+                        Tblocks textBlock = new Tblocks
+                        {
+                            text = guide.Texts[textId++],
+                            priority = block.ID,
+                            gId = created._id
+                        };
+                        await _blocksRepository.CreateTblock(textBlock);
+                        break;
+                    //==============================Video bloko=================================
+                    case "Video":
+                        string[] splitTypeV = guide.Videos[videoId].ContentType.Split('/');
+                        string combinedV = created._id + "v" + videoId.ToString() + "." + splitTypeV[1];
+                        //------------ikelia video faila i Firebase storage
+                        var videoFileID = await _filesRepository.UploadFileToFirebase(guide.Videos[videoId], combinedV, "videos");
+                        if (videoFileID == "")
+                        {
+                            return BadRequest("Nepavyko ikelti video");
+                        }
+                        //----------------Sukuria video bloka------------------
+                        Vblocks videoBlock = new Vblocks
+                        {
+                            priority = i,
+                            URI = videoFileID,
+                            FileName = combinedV,
+                            contentType = guide.Videos[videoId].ContentType,
+                            gId = created._id
+                        };
+                        //-----------ideda bloka i duomenu baze---------
+                        await _blocksRepository.CreateVblock(videoBlock);
+                        videoId++;
+                        break;
+                    //===============================Nuotraukos bloko================================
+                    case "Image":
+                        Console.WriteLine(guide.Images[imgId].ContentType);
+                        string[] splitTypeP = guide.Images[imgId].ContentType.Split('/');
+                        Console.WriteLine(splitTypeP[1]);
+                        string combinedP = created._id + "p" + imgId.ToString() + "." + splitTypeP[1];
+                        //Ikelia faila i Firebase storage
+                        var pictureFileID = await _filesRepository.UploadFileToFirebase(guide.Images[imgId], combinedP, "pictures");
+                        if (pictureFileID == "")
+                        {
+                            return BadRequest("Nepavyko ikelti paveikslelio");
+                        }
+                        //sukuria picture block ikelimui i duombaze
+                        Pblocks imageBlock = new Pblocks
+                        {
+                            priority = i,
+                            URI = pictureFileID,
+                            FileName = combinedP,
+                            contentType = guide.Images[imgId].ContentType,
+                            gId = created._id
+                        };
+                        //-------ikelia picture block i duombaze--------------
+                        await _blocksRepository.CreatePblock(imageBlock);
+                        imgId++;
+                        break;
+                        //---------------------------------------------------
+                }
+            }
+            return Created("sukurta", guide1);
+        }
+        [HttpPut("{guideId}")]
+        [RequestSizeLimit(100_000_000)]
+        public async Task<ActionResult<Guides>> UpdateGuideWithData([FromForm] UpdateGuide guide, string guideId)
+        {
+            int imgId = 0;
+            int videoId = 0;
+            int textId = 0;
+            guide.DeserializeBlocks();
+
+            //Console.WriteLine("Title: {0}", guide.Title);
+            //Console.WriteLine("Description: {0}", guide.Description);
+            //Console.WriteLine("Price: {0}", guide.Price);
+            //Console.WriteLine("Language: {0}", guide.Language);
+
+            //======Gido sukurimas=========
+            Guides guide1 = new Guides()
+            {
+                gCreatorId = guide.CreatorId,
+                latitude = guide.latitude,
+                longtitude = guide.longtitude,
+                description = guide.Description,
+                city = guide.City,
+                name = guide.Title,
+                language = guide.Language,
+                uDate = DateTime.Now,
+                price = guide.Price,
+                visible = guide.Visible,
+                category = guide.Category
+            };
+            //==============sukuria nauja gida i duombaze==================
+            var created = await guidesRepository.CreateGuide(guide1);
+            if (created == null)
             {
                 return BadRequest("Guides is not created");
             }
@@ -214,7 +323,8 @@ namespace VirtualGuidePlatform.Controllers
                     price = item.price,
                     rating = rating,
                     isFavourite = false,
-                    visible = item.visible
+                    visible = item.visible,
+                    category = item.category
                 };
                 guidesToReturn.Add(changed);
             }
@@ -282,6 +392,7 @@ namespace VirtualGuidePlatform.Controllers
                 rating = rating,
                 isFavourite = false,
                 visible = guide.visible,
+                category = guide.category,
                 blocks = blocks
             };
             return Ok(guideToReturn);
@@ -325,7 +436,8 @@ namespace VirtualGuidePlatform.Controllers
                     price = item.price,
                     rating = rating,
                     isFavourite = false,
-                    visible = item.visible
+                    visible = item.visible,
+                    category = item.category
                 };
                 guidesToReturn.Add(changed);
             }
@@ -371,7 +483,8 @@ namespace VirtualGuidePlatform.Controllers
                     price = guide.price,
                     rating = rating,
                     isFavourite = false,
-                    visible = guide.visible
+                    visible = guide.visible,
+                    category = guide.category
                 };
                 guidesToReturn.Add(changed);
             }
@@ -402,6 +515,12 @@ namespace VirtualGuidePlatform.Controllers
             }
 
             return NotFound();
+        }
+        [HttpGet("/tets/{uri}")]
+        public async Task<ActionResult> GetImage(string uri)
+        {
+            
+            return Ok();
         }
     }
 }

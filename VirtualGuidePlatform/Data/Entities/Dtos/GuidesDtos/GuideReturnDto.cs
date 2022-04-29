@@ -28,6 +28,7 @@ namespace VirtualGuidePlatform.Data.Entities.Dtos
         public double rating { get; set; }
         public bool isFavourite { get; set; }
         public bool visible { get; set; }
+        public string category { get; set; }
         public List<BlockDto> blocks { get; set; }
     }
 }
