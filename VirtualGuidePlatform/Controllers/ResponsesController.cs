@@ -18,12 +18,18 @@ namespace VirtualGuidePlatform.Controllers
             _responsesRepository = responsesRepository;
         }
         [HttpGet]
-        public async Task<IEnumerable<Responses>> GetAll(string gid)
+        public async Task<ActionResult<IEnumerable<Responses>>> GetAll(string gid)
         {
             var all = await _responsesRepository.GetResponses(gid);
+
+            if(all.Count == 0)
+            {
+                Console.WriteLine("Ieina");
+                return NotFound(null);
+            }
             //var elems = JsonConvert.SerializeObject(all);
 
-            return all;
+            return Ok(all);
         }
         [HttpPost]
         public async Task<ActionResult<Responses>> CreateOne(Responses response)
@@ -31,6 +37,17 @@ namespace VirtualGuidePlatform.Controllers
             await _responsesRepository.CreateResponse(response);
 
             return Created("sukurta", response);
+        }
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<Responses>> GetUserResponse(string userId, string gid)
+        {
+            var response = await _responsesRepository.GetUserResponse(userId, gid);
+
+            if(response == null)
+            {
+                return NotFound(null);
+            }
+            return Ok(response);
         }
     }
 }

@@ -14,6 +14,7 @@ namespace VirtualGuidePlatform.Data.Repositories
         Task<Guides> CreateGuide(Guides guide);
         Task<Guides> GetGuide(string id);
         Task<List<Guides>> GetGuides();
+        Task<List<Guides>> GetSearchedGuides(Filters filter);
         Task<List<Guides>> GetUserGuides(string userid);
         Task<Guides> SetVisible(string guideId);
         Task<Guides> SetInvisible(string guideId);
@@ -45,6 +46,26 @@ namespace VirtualGuidePlatform.Data.Repositories
             if(items.Count > 0)
             {
                 return items;
+            }
+            return null;
+        }
+        public async Task<List<Guides>> GetSearchedGuides(Filters filter)
+        {
+            List<Guides> items2;
+            if (filter.Category == "" || filter.Category == null)
+            {
+               var res = await _guidesTable.FindAsync(x => x.name.ToLower().Contains(filter.SearchInput.ToLower()) && x.visible == true);
+                items2 = res.ToList();
+            }
+            else
+            {
+                var res = await _guidesTable.FindAsync(x => x.category == filter.Category && x.name.ToLower().Contains(filter.SearchInput.ToLower()) && x.visible == true);
+                items2 = res.ToList();
+            }
+            if (items2.Count > 0)
+            {
+                Console.WriteLine("Ieina cia");
+                return items2;
             }
             return null;
         }

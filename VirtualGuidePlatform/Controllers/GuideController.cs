@@ -516,11 +516,68 @@ namespace VirtualGuidePlatform.Controllers
 
             return NotFound();
         }
-        [HttpGet("/tets/{uri}")]
-        public async Task<ActionResult> GetImage(string uri)
+        [HttpPost("searched")]
+        public async Task<ActionResult<IEnumerable<GuideAllDto>>> GetFiltered(Filters filter)
         {
-            
-            return Ok();
+            var guides = await guidesRepository.GetSearchedGuides(filter);
+
+            if (guides == null || guides.Count <= null)
+            {
+                return NotFound();
+                Console.WriteLine("Ieina cia");
+            }
+
+            if (guides.Count <= 100)
+            {
+                guides.Sort((x, y) => y.uDate.CompareTo(x.uDate));
+            }
+            else
+            {
+                List<Guides> latestGuides = guides.GetRange(0, 100);
+                latestGuides.Sort((x, y) => y.uDate.CompareTo(x.uDate));
+
+                foreach (Guides item in latestGuides)
+                {
+                    Console.WriteLine(item.uDate.ToString());
+                }
+                guides = latestGuides;
+            }
+
+            List<GuideAllDto> guidesToReturn = new List<GuideAllDto>();
+
+            foreach (Guides item in guides)
+            {
+                var pblocks = await _blocksRepository.GetPblocks(item._id);
+                pblocks.Sort((x, y) => x.priority.CompareTo(y.priority));
+                var path = pblocks[0].URI;
+
+                var rating = await CountRating(item._id);
+                var creator = await _accountsRepository.GetCreatorInfoAsync(item.gCreatorId);
+
+                Console.WriteLine("Vidutinis reitingas " + rating.ToString());
+                GuideAllDto changed = new GuideAllDto()
+                {
+                    Image = path,
+                    _id = item._id,
+                    creatorName = creator.firstname,
+                    creatorLastName = creator.lastname,
+                    creatorId = item.gCreatorId,
+                    latitude = item.latitude,
+                    longtitude = item.longtitude,
+                    description = item.description,
+                    city = item.city,
+                    title = item.name,
+                    language = item.language,
+                    uDate = item.uDate,
+                    price = item.price,
+                    rating = rating,
+                    isFavourite = false,
+                    visible = item.visible,
+                    category = item.category
+                };
+                guidesToReturn.Add(changed);
+            }
+            return Ok(guidesToReturn);
         }
     }
 }

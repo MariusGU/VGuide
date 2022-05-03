@@ -12,6 +12,7 @@ namespace VirtualGuidePlatform.Data.Repositories
     {
         Task<List<Responses>> GetResponses(string guideId);
         Task<Responses> CreateResponse(Responses response);
+        Task<Responses> GetUserResponse(string userId, string guideId);
     }
 
     public class ResponsesRepository : IResponsesRepository
@@ -45,6 +46,12 @@ namespace VirtualGuidePlatform.Data.Repositories
             {
                 await _responseTable.ReplaceOneAsync(x => x._id == response._id, response);
             }
+            return response;
+        }
+        public async Task<Responses> GetUserResponse(string userId, string guideId)
+        {
+            var response = (await _responseTable.FindAsync(x => x.gId == guideId && x.uId == userId)).FirstOrDefault();
+
             return response;
         }
     }
