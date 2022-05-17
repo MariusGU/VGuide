@@ -158,5 +158,30 @@ namespace VirtualGuidePlatform.Controllers
 
             return Ok(accountUpdated);
         }
+        [HttpPut("addpayed/{userId}")]
+        public async Task<ActionResult<AccountsDto>> UpdateAddPayed([FromBody] string guideID, string userId)
+        {
+            Console.WriteLine(guideID);
+            var accountUpdated = await _accountsRepository.UpdateAddPayed(guideID, userId);
+
+            if (accountUpdated == null)
+            {
+                return BadRequest("Nepavyko");
+            }
+
+            return Ok(accountUpdated);
+        }
+        [HttpPut("changepassword/{userId}")]
+        public async Task<ActionResult<AccountsDto>> ChangePassword(AccountPswChange passwordData, string userId)
+        {
+            var accountUpdated = await _accountsRepository.ChangePassword(passwordData, userId);
+
+            if (accountUpdated == null)
+            {
+                return BadRequest("Old password is incorrect");
+            }
+
+            return Ok(accountUpdated);
+        }
     }
 }

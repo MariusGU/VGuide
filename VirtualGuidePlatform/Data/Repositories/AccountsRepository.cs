@@ -24,6 +24,8 @@ namespace VirtualGuidePlatform.Data.Repositories
         Task<AccountsDto> UpdateAddSaved(string guideID, string userId);
         Task<AccountsDto> UpdateRemoveSaved(string guideID, string userId);
         Task<AccountDtoCreator> GetCreatorInfoAsync(string creatorId);
+        Task<AccountsDto> UpdateAddPayed(string guideID, string userId);
+        Task<AccountsDto> ChangePassword(AccountPswChange passwordData, string userId);
     }
 
     public class AccountsRepository : IAccountsRepository
@@ -268,6 +270,28 @@ namespace VirtualGuidePlatform.Data.Repositories
             }
             return null;
         }
+        public async Task<AccountsDto> UpdateAddPayed(string guideID, string userId)
+        {
+            Console.WriteLine("ieina");
+            var useraccount = (await _accountTable.FindAsync(x => x._id == userId)).FirstOrDefault();
+            if (useraccount == null)
+            {
+                return null;
+            }
+
+            var payedGuides = AddToArray(guideID, useraccount.payedguides);
+            useraccount.payedguides = payedGuides;
+            var acc = await _accountTable.ReplaceOneAsync(x => x._id == userId, useraccount);
+
+            var mapped = useraccount;
+
+            if (acc.IsAcknowledged)
+            {
+                return new AccountsDto(mapped._id, mapped.firstname, mapped.lastname, mapped.email, mapped.languages,
+                    mapped.followers, mapped.followed, mapped.ppicture, mapped.savedguides, mapped.payedguides);
+            }
+            return null;
+        }
         public async Task<AccountDtoCreator> GetCreatorInfoAsync(string creatorId)
         {
             var creator = (await _accountTable.FindAsync(x => x._id == creatorId)).FirstOrDefault();
@@ -280,6 +304,27 @@ namespace VirtualGuidePlatform.Data.Repositories
                 creator.ppicture, creator.followers, creator.followed);
 
             return creatorReturn;
+        }
+        public async Task<AccountsDto> ChangePassword(AccountPswChange passwordData, string userId)
+        {
+            Console.WriteLine("ieina");
+            var useraccount = (await _accountTable.FindAsync(x => x._id == userId && x.password == passwordData.OldPassword)).FirstOrDefault();
+            if (useraccount == null)
+            {
+                return null;
+            }
+
+            useraccount.password = passwordData.NewPassword;
+            var acc = await _accountTable.ReplaceOneAsync(x => x._id == userId, useraccount);
+
+            var mapped = useraccount;
+
+            if (acc.IsAcknowledged)
+            {
+                return new AccountsDto(mapped._id, mapped.firstname, mapped.lastname, mapped.email, mapped.languages,
+                    mapped.followers, mapped.followed, mapped.ppicture, mapped.savedguides, mapped.payedguides);
+            }
+            return null;
         }
     }
 }

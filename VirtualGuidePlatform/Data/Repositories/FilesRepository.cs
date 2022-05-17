@@ -14,6 +14,7 @@ namespace VirtualGuidePlatform.Data.Repositories
     public interface IFilesRepository
     {
         Task<string> UploadFileToFirebase(IFormFile file, string newname, string folder);
+        Task<bool> DeleteFile(string path);
     }
 
     public class FilesRepository : IFilesRepository
@@ -55,6 +56,60 @@ namespace VirtualGuidePlatform.Data.Repositories
                 }
             }
             return "";
+        }
+        public async Task<bool> DeleteFile(string path)
+        {
+            var auth = new FirebaseAuthProvider(new FirebaseConfig(_configuration.GetConnectionString("FirebaseApiKey")));
+            var a = await auth.SignInWithEmailAndPasswordAsync(_configuration.GetConnectionString("FirebaseEmail"), _configuration.GetConnectionString("FirebasePass"));
+
+
+            var task = new FirebaseStorage(_configuration.GetConnectionString("FirebaseBucket"),
+                new FirebaseStorageOptions
+                {
+                    AuthTokenAsyncFactory = () => Task.FromResult(a.FirebaseToken),
+                }
+                ).Child(path).DeleteAsync();
+
+            try
+            {
+                await task;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(task.IsFaulted);
+                return false;
+            }
+            return true;
+
+        }
+        public async Task<bool> DownloadFile(string path)
+        {
+            var auth = new FirebaseAuthProvider(new FirebaseConfig(_configuration.GetConnectionString("FirebaseApiKey")));
+            var a = await auth.SignInWithEmailAndPasswordAsync(_configuration.GetConnectionString("FirebaseEmail"), _configuration.GetConnectionString("FirebasePass"));
+
+
+            var task = new FirebaseStorage(_configuration.GetConnectionString("FirebaseBucket"),
+                new FirebaseStorageOptions
+                {
+                    AuthTokenAsyncFactory = () => Task.FromResult(a.FirebaseToken),
+                }
+                ).Child(path).GetDownloadUrlAsync();
+
+
+            try
+            {
+                var res = await task;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(task.IsFaulted);
+                return false;
+            }
+
+            
+
+            return true;
+
         }
         //public async Task<IFormFile> GetFileByUri(string uri)
         //{

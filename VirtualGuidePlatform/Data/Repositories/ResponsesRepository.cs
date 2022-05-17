@@ -13,6 +13,7 @@ namespace VirtualGuidePlatform.Data.Repositories
         Task<List<Responses>> GetResponses(string guideId);
         Task<Responses> CreateResponse(Responses response);
         Task<Responses> GetUserResponse(string userId, string guideId);
+        Task<List<Responses>> GetNotUserResponse(string userid, string guideid);
     }
 
     public class ResponsesRepository : IResponsesRepository
@@ -35,16 +36,24 @@ namespace VirtualGuidePlatform.Data.Repositories
 
             return objects.ToList();
         }
+        public async Task<List<Responses>> GetNotUserResponse(string userid, string guideid)
+        {
+            var items = (await _responseTable.FindAsync(x => x.gId == guideid && x.uId != userid)).ToList();
+
+            return items;
+        }
         public async Task<Responses> CreateResponse(Responses response)
         {
-            var obj = _responseTable.Find(x => x._id == response._id).FirstOrDefault();
+            var obj = _responseTable.Find(x => x.gId == response.gId && x.uId == response.uId).FirstOrDefault();
             if (obj == null)
             {
                 await _responseTable.InsertOneAsync(response);
             }
             else
             {
-                await _responseTable.ReplaceOneAsync(x => x._id == response._id, response);
+                var temp = response;
+                temp._id = obj._id;
+                await _responseTable.ReplaceOneAsync(x => x._id == temp._id, temp);
             }
             return response;
         }

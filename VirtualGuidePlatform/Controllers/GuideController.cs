@@ -579,5 +579,17 @@ namespace VirtualGuidePlatform.Controllers
             }
             return Ok(guidesToReturn);
         }
+        [HttpDelete("deletefile")]
+        public async Task<ActionResult<bool>> DeleteFile([FromBody] string path)
+        {
+            var res = await _filesRepository.DeleteFile(path);
+
+            if(res == false)
+            {
+                return BadRequest("");
+            }
+
+            return res;
+        }
     }
 }
