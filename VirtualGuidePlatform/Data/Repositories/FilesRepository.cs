@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,6 +16,7 @@ namespace VirtualGuidePlatform.Data.Repositories
     {
         Task<string> UploadFileToFirebase(IFormFile file, string newname, string folder);
         Task<bool> DeleteFile(string path);
+        Task<bool> DownloadFile(string path);
     }
 
     public class FilesRepository : IFilesRepository
@@ -62,7 +64,6 @@ namespace VirtualGuidePlatform.Data.Repositories
             var auth = new FirebaseAuthProvider(new FirebaseConfig(_configuration.GetConnectionString("FirebaseApiKey")));
             var a = await auth.SignInWithEmailAndPasswordAsync(_configuration.GetConnectionString("FirebaseEmail"), _configuration.GetConnectionString("FirebasePass"));
 
-
             var task = new FirebaseStorage(_configuration.GetConnectionString("FirebaseBucket"),
                 new FirebaseStorageOptions
                 {
@@ -80,50 +81,27 @@ namespace VirtualGuidePlatform.Data.Repositories
                 return false;
             }
             return true;
-
         }
         public async Task<bool> DownloadFile(string path)
         {
-            var auth = new FirebaseAuthProvider(new FirebaseConfig(_configuration.GetConnectionString("FirebaseApiKey")));
-            var a = await auth.SignInWithEmailAndPasswordAsync(_configuration.GetConnectionString("FirebaseEmail"), _configuration.GetConnectionString("FirebasePass"));
+            var splited = path.Split('/');
+            Console.WriteLine(splited[splited.Length - 1]);
+            var secondSplit = splited[splited.Length - 1].Split('.');
+            Console.WriteLine(secondSplit[secondSplit.Length - 1]);
+            var thirdSplit = secondSplit[secondSplit.Length - 1].Split('?');
+            Console.WriteLine(thirdSplit[0]);
 
-
-            var task = new FirebaseStorage(_configuration.GetConnectionString("FirebaseBucket"),
-                new FirebaseStorageOptions
-                {
-                    AuthTokenAsyncFactory = () => Task.FromResult(a.FirebaseToken),
-                }
-                ).Child(path).GetDownloadUrlAsync();
-
-
-            try
+            string targetFileName = "Images/temp." + thirdSplit[0];
+            using (WebClient client = new WebClient())
             {
-                var res = await task;
+                Uri downloadURI = new Uri(path);
+                client.DownloadFile(downloadURI, targetFileName);
             }
-            catch (Exception ex)
+            if (File.Exists(targetFileName))
             {
-                Console.WriteLine(task.IsFaulted);
-                return false;
+                return true;
             }
-
-            
-
-            return true;
-
+            return false;
         }
-        //public async Task<IFormFile> GetFileByUri(string uri)
-        //{
-        //    var auth = new FirebaseAuthProvider(new FirebaseConfig(_configuration.GetConnectionString("FirebaseApiKey")));
-        //    var a = await auth.SignInWithEmailAndPasswordAsync(_configuration.GetConnectionString("FirebaseEmail"), 
-        //        _configuration.GetConnectionString("FirebasePass"));
-
-        //    var task = new FirebaseStorage(_configuration.GetConnectionString("FirebaseBucket"),
-        //            new FirebaseStorageOptions
-        //            {
-        //                AuthTokenAsyncFactory = () => Task.FromResult(a.FirebaseToken),
-
-        //            }
-        //            ).
-        //}
     }
 }

@@ -591,5 +591,17 @@ namespace VirtualGuidePlatform.Controllers
 
             return res;
         }
+        [HttpGet("getfile")]
+        public async Task<ActionResult<bool>> FileDownload([FromBody] string path)
+        {
+            var res = await _filesRepository.DownloadFile(path);
+
+            if(res == false)
+            {
+                return NotFound(res);
+            }
+
+            return Ok(res);
+        }
     }
 }
