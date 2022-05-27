@@ -4,6 +4,7 @@ using Stripe;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using VirtualGuidePlatform.Data.Entities;
 using VirtualGuidePlatform.Data.Repositories;
 
 namespace VirtualGuidePlatform.Controllers
@@ -14,10 +15,12 @@ namespace VirtualGuidePlatform.Controllers
     {
         private const string ApiKey = "sk_test_51L0Yf4FAWZEgTFzWGsM6cXkKuvzw94h1qGSYtlMusgTYJq8wuFutxP4DjReTSdEvYVFqjPUykoVBrmaB3larMhjg00j55pEr0a";
         private IGuidesRepository _guidesRepository;
+        private IPaymentsRepository _paymentsRepository;
 
-        public PaymentsController(IGuidesRepository guidesRepo)
+        public PaymentsController(IGuidesRepository guidesRepo, IPaymentsRepository paymentsRepository)
         {
             _guidesRepository = guidesRepo;
+            _paymentsRepository = paymentsRepository;
         }
 
         public class PostModel
@@ -45,9 +48,13 @@ namespace VirtualGuidePlatform.Controllers
             var intent = service.Create(options);
 
 
-            
+
             // Irasyti i duombaze vartotojo id ir gido id ir payment id
             // model.userID, model.guideID ir intent.id = payment id
+
+            Payment payment = new Payment() { uID = model.userID, gID = model.guideID, pID = intent.Id };
+
+            var paymentresp = await _paymentsRepository.CreatePayment(payment);
 
             return Ok(new {client_secret = intent.ClientSecret});
         }

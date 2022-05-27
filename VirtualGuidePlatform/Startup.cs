@@ -29,6 +29,7 @@ namespace VirtualGuidePlatform
             services.AddScoped<IBlocksRepository, BlocksRepository>();
             services.AddScoped<IResponsesRepository, ResponsesRepository>();
             services.AddScoped<IFilesRepository, FilesRepository>();
+            services.AddScoped<IPaymentsRepository, PaymentsRepository>();
             services.Configure<KestrelServerOptions>(options => options.Limits.MaxRequestBodySize = int.MaxValue);
             services.Configure<FormOptions>(options =>
             {
