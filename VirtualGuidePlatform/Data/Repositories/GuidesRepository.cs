@@ -43,7 +43,7 @@ namespace VirtualGuidePlatform.Data.Repositories
         {
             var res = await _guidesTable.FindAsync(x => x.visible == true);
             var items = res.ToList();
-            if(items.Count > 0)
+            if (items.Count > 0)
             {
                 return items;
             }
@@ -51,6 +51,7 @@ namespace VirtualGuidePlatform.Data.Repositories
         }
         public async Task<List<Guides>> GetSearchedGuides(Filters filter)
         {
+            Console.WriteLine(filter.Category);
             List<Guides> items2;
             if (filter.Category == "" || filter.Category == null)
             {
@@ -59,7 +60,7 @@ namespace VirtualGuidePlatform.Data.Repositories
             }
             else
             {
-                var res = await _guidesTable.FindAsync(x => x.category == filter.Category && x.name.ToLower().Contains(filter.SearchInput.ToLower()) && x.visible == true);
+                var res = await _guidesTable.FindAsync(x => x.category.ToLower() == filter.Category.ToLower() && x.name.ToLower().Contains(filter.SearchInput.ToLower()) && x.visible == true);
                 items2 = res.ToList();
             }
             if (items2.Count > 0)
