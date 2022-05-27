@@ -65,14 +65,14 @@ namespace VirtualGuidePlatform.Controllers
                 return NotFound("User not found, check your email or password");
             }
         }
-        [HttpGet]
-        public async Task<IEnumerable<Accounts>> GetAll()
-        {
-            var all = await _accountsRepository.GetAccounts();
-            //var elems = JsonConvert.SerializeObject(all);
+        //[HttpGet]
+        //public async Task<IEnumerable<Accounts>> GetAll()
+        //{
+        //    var all = await _accountsRepository.GetAccounts();
+        //    //var elems = JsonConvert.SerializeObject(all);
 
-            return all;
-        }
+        //    return all;
+        //}
         [HttpPost("register")]
         public async Task<ActionResult<AccountsDto>> CreateOne(Accounts account)
         {

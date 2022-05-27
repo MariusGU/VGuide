@@ -62,7 +62,7 @@ namespace VirtualGuidePlatform.Controllers
         }
 
         [HttpPost("payment-check/{payment_id}")]
-        public async Task<IActionResult> CheckPayment(string payment_id)
+        public async Task<ActionResult<AccountsDto>> CheckPayment(string payment_id)
         {
             StripeConfiguration.ApiKey = ApiKey;
             var service = new PaymentIntentService();
@@ -80,10 +80,10 @@ namespace VirtualGuidePlatform.Controllers
                     {
                         return BadRequest("Nepavyko");
                     }
-                    return Ok();
+                    return Ok(accountUpdated);
                 }
             }
-            return Ok();
+            return BadRequest("Nepavyko");
         }
     }
 }
