@@ -16,11 +16,13 @@ namespace VirtualGuidePlatform.Controllers
         private const string ApiKey = "sk_test_51L0Yf4FAWZEgTFzWGsM6cXkKuvzw94h1qGSYtlMusgTYJq8wuFutxP4DjReTSdEvYVFqjPUykoVBrmaB3larMhjg00j55pEr0a";
         private IGuidesRepository _guidesRepository;
         private IPaymentsRepository _paymentsRepository;
+        private IAccountsRepository _accountsRepository;
 
-        public PaymentsController(IGuidesRepository guidesRepo, IPaymentsRepository paymentsRepository)
+        public PaymentsController(IGuidesRepository guidesRepo, IPaymentsRepository paymentsRepository, IAccountsRepository accountsRepository)
         {
             _guidesRepository = guidesRepo;
             _paymentsRepository = paymentsRepository;
+            _accountsRepository = accountsRepository;
         }
 
         public class PostModel
@@ -69,6 +71,17 @@ namespace VirtualGuidePlatform.Controllers
                 Console.WriteLine("Apmoketas");
                 // Pagal payment id paimti userid ir guideid
                 // ir irasyti gido id, useriui i buyedGuides array
+                var payment = await _paymentsRepository.GetPayment(payment_id);
+                if (payment != null)
+                {
+                    var accountUpdated = await _accountsRepository.UpdateAddPayed(payment.gID, payment.uID);
+
+                    if (accountUpdated == null)
+                    {
+                        return BadRequest("Nepavyko");
+                    }
+                    return Ok();
+                }
             }
             return Ok();
         }

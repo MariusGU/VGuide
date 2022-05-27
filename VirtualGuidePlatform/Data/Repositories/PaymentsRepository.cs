@@ -8,6 +8,7 @@ namespace VirtualGuidePlatform.Data.Repositories
     public interface IPaymentsRepository
     {
         Task<Payment> CreatePayment(Payment payment);
+        Task<Payment> GetPayment(string pid);
     }
 
     public class PaymentsRepository : IPaymentsRepository
@@ -37,6 +38,17 @@ namespace VirtualGuidePlatform.Data.Repositories
                 await _paymentsTable.ReplaceOneAsync(x => x._id == payment._id, payment);
             }
             return payment;
+        }
+        public async Task<Payment> GetPayment(string pid)
+        {
+            var obj = (await _paymentsTable.FindAsync(x => x.pID == pid)).FirstOrDefault();
+
+            if (obj != null)
+            {
+                return obj;
+            }
+
+            return null;
         }
     }
 }
