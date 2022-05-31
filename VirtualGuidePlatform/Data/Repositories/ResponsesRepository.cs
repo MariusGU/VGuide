@@ -14,6 +14,7 @@ namespace VirtualGuidePlatform.Data.Repositories
         Task<Responses> CreateResponse(Responses response);
         Task<Responses> GetUserResponse(string userId, string guideId);
         Task<List<Responses>> GetNotUserResponse(string userid, string guideid);
+        Task<bool> DeleteResponse(string rid);
     }
 
     public class ResponsesRepository : IResponsesRepository
@@ -62,6 +63,15 @@ namespace VirtualGuidePlatform.Data.Repositories
             var response = (await _responseTable.FindAsync(x => x.gId == guideId && x.uId == userId)).FirstOrDefault();
 
             return response;
+        }
+        public async Task<bool> DeleteResponse(string rid)
+        {
+            var res = await _responseTable.DeleteOneAsync(x => x._id == rid);
+            if (res.IsAcknowledged)
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

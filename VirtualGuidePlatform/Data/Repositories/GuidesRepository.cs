@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
@@ -18,6 +19,8 @@ namespace VirtualGuidePlatform.Data.Repositories
         Task<List<Guides>> GetUserGuides(string userid);
         Task<Guides> SetVisible(string guideId);
         Task<Guides> SetInvisible(string guideId);
+        Task<Guides> UpdateGuide(Guides guide);
+        Task<bool> DeleteGuide(string guideId);
     }
 
     public class GuidesRepository : IGuidesRepository
@@ -95,6 +98,21 @@ namespace VirtualGuidePlatform.Data.Repositories
 
             return guide;
         }
+        public async Task<Guides> UpdateGuide(Guides guide)
+        {
+            var obj = (await _guidesTable.FindAsync(x => x._id == guide._id)).FirstOrDefault();
+
+            if (obj == null)
+            {
+                await _guidesTable.InsertOneAsync(guide);
+            }
+            else
+            {
+                await _guidesTable.ReplaceOneAsync(x => x._id == guide._id, guide);
+            }
+
+            return guide;
+        }
         public async Task<Guides> SetVisible(string guideId)
         {
             var obj = (await _guidesTable.FindAsync(x => x._id == guideId)).FirstOrDefault();
@@ -132,6 +150,17 @@ namespace VirtualGuidePlatform.Data.Repositories
                 return updated;
             }
             return null;
+        }
+        public async Task<bool> DeleteGuide(string guideId)
+        {
+            var res = await _guidesTable.DeleteOneAsync(x => x._id == guideId);
+
+            if (res.IsAcknowledged)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

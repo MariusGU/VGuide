@@ -73,6 +73,7 @@ namespace VirtualGuidePlatform.Controllers
             for (int i = 0; i < guide.DeserializedBlocks.Count; i++)
             {
                 var block = guide.DeserializedBlocks[i];
+                Console.WriteLine("Ieina i bloko paemima");
                 switch (block.Type)
                 {
                     //---------------------------------------------------------------------------
@@ -139,26 +140,33 @@ namespace VirtualGuidePlatform.Controllers
             }
             return Created("sukurta", guide1);
         }
-        [HttpPut("{guideId}")]
+        //[FromForm] UpdateGuide guide
+        [HttpPut]
         [RequestSizeLimit(100_000_000)]
-        public async Task<ActionResult<Guides>> UpdateGuideWithData([FromForm] UpdateGuide guide, string guideId)
+        public async Task<ActionResult<Guides>> UpdateGuideWithData([FromForm] UpdateGuide guide)
         {
+            var resguide = await guidesRepository.GetGuide(guide.GuideId);
+
+            var Images = await _blocksRepository.GetPblocks(guide.GuideId);
+            var videos = await _blocksRepository.GetVblocks(guide.GuideId);
+            var texts = await _blocksRepository.GetTblocks(guide.GuideId);
+
             int imgId = 0;
+            int imgUriId = 0;
             int videoId = 0;
+            int videoUriId = 0;
             int textId = 0;
             guide.DeserializeBlocks();
 
-            //Console.WriteLine("Title: {0}", guide.Title);
-            //Console.WriteLine("Description: {0}", guide.Description);
-            //Console.WriteLine("Price: {0}", guide.Price);
-            //Console.WriteLine("Language: {0}", guide.Language);
+            Console.WriteLine(guide.DeserializedBlocks.Count);
 
             //======Gido sukurimas=========
             Guides guide1 = new Guides()
             {
+                _id = guide.GuideId,
                 gCreatorId = guide.CreatorId,
-                latitude = guide.latitude,
-                longtitude = guide.longtitude,
+                latitude = resguide.latitude,
+                longtitude = resguide.longtitude,
                 description = guide.Description,
                 city = guide.City,
                 name = guide.Title,
@@ -169,10 +177,10 @@ namespace VirtualGuidePlatform.Controllers
                 category = guide.Category
             };
             //==============sukuria nauja gida i duombaze==================
-            var created = await guidesRepository.CreateGuide(guide1);
+            var created = await guidesRepository.UpdateGuide(guide1);
             if (created == null)
             {
-                return BadRequest("Guides is not created");
+                return BadRequest("Guides is not updated");
             }
             //====================================
             //----------------------------------
@@ -196,9 +204,10 @@ namespace VirtualGuidePlatform.Controllers
                     //==============================Video bloko=================================
                     case "Video":
                         string[] splitTypeV = guide.Videos[videoId].ContentType.Split('/');
-                        string combinedV = created._id + "v" + videoId.ToString() + "." + splitTypeV[1];
+                        string str = DateTime.Now.Ticks.ToString();
+                        string nameV = str + "." + splitTypeV[1];
                         //------------ikelia video faila i Firebase storage
-                        var videoFileID = await _filesRepository.UploadFileToFirebase(guide.Videos[videoId], combinedV, "videos");
+                        var videoFileID = await _filesRepository.UploadFileToFirebase(guide.Videos[videoId], nameV, "videos");
                         if (videoFileID == "")
                         {
                             return BadRequest("Nepavyko ikelti video");
@@ -208,7 +217,7 @@ namespace VirtualGuidePlatform.Controllers
                         {
                             priority = i,
                             URI = videoFileID,
-                            FileName = combinedV,
+                            FileName = nameV,
                             contentType = guide.Videos[videoId].ContentType,
                             gId = created._id
                         };
@@ -216,14 +225,39 @@ namespace VirtualGuidePlatform.Controllers
                         await _blocksRepository.CreateVblock(videoBlock);
                         videoId++;
                         break;
+                    case "Videouri":
+                        var splited = guide.VideosUris[videoUriId].Split('/');
+                        var secondSplit = splited[splited.Length - 1].Split('.');
+                        var thirdSplit = secondSplit[secondSplit.Length - 1].Split('?');
+                        //------------ per nauja ikelia faila is firebase i firebase --------------------
+                        string strv1 = DateTime.Now.Ticks.ToString();
+                        string newname = strv1 + "." + thirdSplit[0];
+                        var videoFileID1 = await _filesRepository.ReuploadFile(guide.VideosUris[videoUriId], newname, "videos");
+                        if (videoFileID1 == "")
+                        {
+                            return BadRequest("Nepavyko ikelti video");
+                        }
+                        //----------------Sukuria video bloka------------------
+                        Vblocks videoBlockV1 = new Vblocks
+                        {
+                            priority = i,
+                            URI = videoFileID1,
+                            FileName = newname,
+                            contentType = "video/" + thirdSplit[0],
+                            gId = created._id
+                        };
+                        //-----------ideda bloka i duomenu baze---------
+                        await _blocksRepository.CreateVblock(videoBlockV1);
+                        videoUriId++;
+                        break;
                     //===============================Nuotraukos bloko================================
                     case "Image":
-                        Console.WriteLine(guide.Images[imgId].ContentType);
                         string[] splitTypeP = guide.Images[imgId].ContentType.Split('/');
-                        Console.WriteLine(splitTypeP[1]);
-                        string combinedP = created._id + "p" + imgId.ToString() + "." + splitTypeP[1];
+                        string str1 = DateTime.Now.Ticks.ToString();
+                        string nameP = str1 + "." + splitTypeP[1];
+                        Console.WriteLine(nameP);
                         //Ikelia faila i Firebase storage
-                        var pictureFileID = await _filesRepository.UploadFileToFirebase(guide.Images[imgId], combinedP, "pictures");
+                        var pictureFileID = await _filesRepository.UploadFileToFirebase(guide.Images[imgId], nameP, "pictures");
                         if (pictureFileID == "")
                         {
                             return BadRequest("Nepavyko ikelti paveikslelio");
@@ -233,7 +267,7 @@ namespace VirtualGuidePlatform.Controllers
                         {
                             priority = i,
                             URI = pictureFileID,
-                            FileName = combinedP,
+                            FileName = nameP,
                             contentType = guide.Images[imgId].ContentType,
                             gId = created._id
                         };
@@ -241,10 +275,62 @@ namespace VirtualGuidePlatform.Controllers
                         await _blocksRepository.CreatePblock(imageBlock);
                         imgId++;
                         break;
+
+                    case "Imageuri":
+                        var splitedP = guide.ImagesUris[imgUriId].Split('/');
+                        var secondSplitP = splitedP[splitedP.Length - 1].Split('.');
+                        var thirdSplitP = secondSplitP[secondSplitP.Length - 1].Split('?');
+                        //Ikelia faila i Firebase storage
+                        string strp1 = DateTime.Now.Ticks.ToString();
+                        string newnameP = strp1 + "." + thirdSplitP[0];
+                        Console.WriteLine(newnameP);
+                        var pictureFileIDV1 = await _filesRepository.ReuploadFile(guide.ImagesUris[imgUriId], newnameP, "pictures");
+                        if (pictureFileIDV1 == "")
+                        {
+                            return BadRequest("Nepavyko ikelti paveikslelio");
+                        }
+                        //sukuria picture block ikelimui i duombaze
+                        Pblocks imageBlock1 = new Pblocks
+                        {
+                            priority = i,
+                            URI = pictureFileIDV1,
+                            FileName = newnameP,
+                            contentType = "image/" + thirdSplitP[0],
+                            gId = created._id
+                        };
+                        //-------ikelia picture block i duombaze--------------
+                        await _blocksRepository.CreatePblock(imageBlock1);
+                        imgUriId++;
+                        break;
                         //---------------------------------------------------
                 }
             }
-            return Created("sukurta", guide1);
+            var deleteres = await DeleteOldGuideInfo(Images, videos, texts);
+            return Ok(guide1);
+            //return Ok();
+        }
+        private async Task<bool> DeleteOldGuideInfo(List<Pblocks> images, List<Vblocks> videos, List<Tblocks> texts)
+        {
+            try
+            {
+                foreach (Tblocks text in texts)
+                {
+                    await _blocksRepository.DeleteTBlock(text._id);
+                }
+                foreach (Pblocks image in images)
+                {
+                    await _blocksRepository.DeletePBlock(image._id);
+                }
+                foreach (Vblocks video in videos)
+                {
+                    await _blocksRepository.DeleteVBlock(video._id);
+                }
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+            return true;
         }
         private async Task<double> CountRating(string gid)
         {
@@ -579,6 +665,54 @@ namespace VirtualGuidePlatform.Controllers
             }
             return Ok(guidesToReturn);
         }
+
+        [HttpDelete("{guideId}")]
+        public async Task<ActionResult> DeleteGuide(string guideId)
+        {
+            var guide = await guidesRepository.GetGuide(guideId);
+
+            if(guide == null)
+            {
+                return BadRequest("");
+            }
+
+            var isDeleted = await guidesRepository.DeleteGuide(guideId);
+
+            if (!isDeleted)
+            {
+                return BadRequest("");
+            }
+
+            var pictures = await _blocksRepository.GetPblocks(guideId);
+            var videos = await _blocksRepository.GetVblocks(guideId);
+            var texts = await _blocksRepository.GetTblocks(guideId);
+            var responses = await _responsesRepository.GetResponses(guideId);
+
+            foreach(Pblocks picture in pictures)
+            {
+                var resP = await _blocksRepository.DeletePBlock(picture._id);
+                var resFP = await _filesRepository.DeleteFile("pictures/" + picture.FileName);
+            }
+
+            foreach (Vblocks video in videos)
+            {
+                var resV = await _blocksRepository.DeleteVBlock(video._id);
+                var resFV = await _filesRepository.DeleteFile("videos/" + video.FileName);
+            }
+
+            foreach(Tblocks text in texts)
+            {
+                var resT = await _blocksRepository.DeleteTBlock(text._id);
+            }
+
+            foreach(Responses response in responses)
+            {
+                var resR = await _responsesRepository.DeleteResponse(response._id);
+            }
+
+            return Ok("Deleted");
+        }
+
         [HttpDelete("deletefile")]
         public async Task<ActionResult<bool>> DeleteFile([FromBody] string path)
         {
@@ -596,12 +730,30 @@ namespace VirtualGuidePlatform.Controllers
         {
             var res = await _filesRepository.DownloadFile(path);
 
-            if(res == false)
+            if(res == "")
             {
                 return NotFound(res);
             }
 
             return Ok(res);
+        }
+        [HttpPost("uploadfile")]
+        public async Task<ActionResult<string>> ReUploadFile([FromBody] string path)
+        {
+            var splited = path.Split('/');
+            var secondSplit = splited[splited.Length - 1].Split('.');
+            var thirdSplit = secondSplit[secondSplit.Length - 1].Split('?');
+
+            Console.WriteLine();
+            var res = await _filesRepository.ReuploadFile(path, "temp1.jpeg", "pictures");
+
+            if (res == "")
+            {
+                Console.WriteLine("ieina");
+                return BadRequest("");
+            }
+
+            return res;
         }
     }
 }

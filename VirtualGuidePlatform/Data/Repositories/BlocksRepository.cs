@@ -16,6 +16,11 @@ namespace VirtualGuidePlatform.Data.Repositories
         Task<List<Vblocks>> GetVblocks(string guideId);
         Task<List<Pblocks>> GetPblocks(string guideId);
         Task<List<Tblocks>> GetTblocks(string guideId);
+        Task<bool> DeleteTBlock(string blockId);
+        Task<bool> DeleteVBlock(string blockId);
+        Task<bool> DeletePBlock(string blockId);
+        Task<bool> DeleteVBlockByURI(string uri);
+        Task<bool> DeletePBlockByURI(string uri);
     }
     public class BlocksRepository : IBlocksRepository
     {
@@ -112,6 +117,51 @@ namespace VirtualGuidePlatform.Data.Repositories
             {
                 return new List<Vblocks>();
             }
+        }
+        public async Task<bool> DeletePBlock(string blockId)
+        {
+            var res = await _pBlocksTable.DeleteOneAsync(x => x._id == blockId);
+            if (res.IsAcknowledged)
+            {
+                return true;
+            }
+            return false;
+        }
+        public async Task<bool> DeleteVBlock(string blockId)
+        {
+            var res = await _vBlocksTable.DeleteOneAsync(x => x._id == blockId);
+            if (res.IsAcknowledged)
+            {
+                return true;
+            }
+            return false;
+        }
+        public async Task<bool> DeleteTBlock(string blockId)
+        {
+            var res = await _tBlocksTable.DeleteOneAsync(x => x._id == blockId);
+            if (res.IsAcknowledged)
+            {
+                return true;
+            }
+            return false;
+        }
+        public async Task<bool> DeleteVBlockByURI(string uri)
+        {
+            var res = await _vBlocksTable.DeleteOneAsync(x => x.URI == uri);
+            if (res.IsAcknowledged)
+            {
+                return true;
+            }
+            return false;
+        }
+        public async Task<bool> DeletePBlockByURI(string uri)
+        {
+            var res = await _pBlocksTable.DeleteOneAsync(x => x.URI == uri);
+            if (res.IsAcknowledged)
+            {
+                return true;
+            }
+            return false;
         }
     }
 }
