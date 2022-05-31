@@ -166,6 +166,7 @@ namespace VirtualGuidePlatform.Data.Repositories
                 try
                 {
                     string link = await task;
+                    stream.Close();
                     Console.WriteLine(link);
                     return link;
                 }
