@@ -45,11 +45,8 @@ namespace VirtualGuidePlatform.Controllers
                 PaymentMethodTypes = new List<string> { "card" },
                 StatementDescriptor = "Buying Guide",
             };
-
             var service = new PaymentIntentService();
             var intent = service.Create(options);
-
-
 
             // Irasyti i duombaze vartotojo id ir gido id ir payment id
             // model.userID, model.guideID ir intent.id = payment id
