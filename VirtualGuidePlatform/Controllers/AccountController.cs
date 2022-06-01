@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Newtonsoft.Json;
@@ -17,9 +18,11 @@ namespace VirtualGuidePlatform.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IAccountsRepository _accountsRepository;
-        public AccountController(IAccountsRepository accountsRepository)
+        private readonly IFilesRepository _filesRepository;
+        public AccountController(IAccountsRepository accountsRepository, IFilesRepository filesRepository)
         {
             _accountsRepository = accountsRepository;
+            _filesRepository = filesRepository;
         }
         [HttpGet("{id}")]
         public async Task<Accounts> GetOne(string id)
@@ -65,14 +68,48 @@ namespace VirtualGuidePlatform.Controllers
                 return NotFound("User not found, check your email or password");
             }
         }
-        //[HttpGet]
-        //public async Task<IEnumerable<Accounts>> GetAll()
-        //{
-        //    var all = await _accountsRepository.GetAccounts();
-        //    //var elems = JsonConvert.SerializeObject(all);
+        [HttpPost("uploadphoto/{userId}")]
+        public async Task<ActionResult<AccountsDto>> UploadProfilePicture(IFormFile file, string userId)
+        {
+            var obj = await _accountsRepository.GetAccount(userId);
+            if (obj != null)
+            {
+                string[] type = file.ContentType.Split('/');
+                var resFile = await _filesRepository.UploadFileToFirebase(file, obj._id + "." + type[1], "profilepictures");
+                if(resFile == "")
+                {
+                    return BadRequest("");
+                }
 
-        //    return all;
-        //}
+                obj.ppicture = resFile;
+
+                var resacc = await _accountsRepository.UpdateAccount(obj, userId);
+
+                if(resacc == null)
+                {
+                    return BadRequest("");
+                }
+
+                AccountsDto acc = new AccountsDto()
+                {
+                    _id = obj._id,
+                    firstname = obj.firstname,
+                    lastname = obj.lastname,
+                    email = obj.email,
+                    languages = obj.languages,
+                    followers = obj.followers,
+                    followed = obj.followed,
+                    ppicture = obj.ppicture,
+                    savedguides = obj.savedguides,
+                    payedguides = obj.payedguides
+                };
+                return Ok(acc);
+            }
+            else
+            {
+                return NotFound("User not found");
+            }
+        }
         [HttpPost("register")]
         public async Task<ActionResult<AccountsDto>> CreateOne(Accounts account)
         {
