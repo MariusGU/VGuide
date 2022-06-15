@@ -24,16 +24,10 @@ namespace VirtualGuidePlatform.Controllers
             _accountsRepository = accountsRepository;
             _filesRepository = filesRepository;
         }
-        [HttpGet("{id}")]
-        public async Task<Accounts> GetOne(string id)
-        {
-            var account = await _accountsRepository.GetAccount(id);
-            return account;
-        }
-        [HttpGet("/creators/{creatorId}")]
+        [HttpGet("{creatorId}")]
         public async Task<ActionResult<AccountDtoCreator>> GetCreator(string creatorId)
         {
-            var creator = _accountsRepository.GetCreatorInfoAsync(creatorId);
+            var creator = await _accountsRepository.GetCreatorInfoAsync(creatorId);
 
             if(creator == null)
             {
@@ -69,13 +63,13 @@ namespace VirtualGuidePlatform.Controllers
             }
         }
         [HttpPost("uploadphoto/{userId}")]
-        public async Task<ActionResult<AccountsDto>> UploadProfilePicture(IFormFile file, string userId)
+        public async Task<ActionResult<AccountsDto>> UploadProfilePicture([FromForm] UploadFile file, string userId)
         {
             var obj = await _accountsRepository.GetAccount(userId);
             if (obj != null)
             {
-                string[] type = file.ContentType.Split('/');
-                var resFile = await _filesRepository.UploadFileToFirebase(file, obj._id + "." + type[1], "profilepictures");
+                string[] type = file.file.ContentType.Split('/');
+                var resFile = await _filesRepository.UploadFileToFirebase(file.file, obj._id + "." + type[1], "profilepictures");
                 if(resFile == "")
                 {
                     return BadRequest("");

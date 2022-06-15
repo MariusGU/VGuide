@@ -300,6 +300,8 @@ namespace VirtualGuidePlatform.Data.Repositories
                 return null;
             }
 
+            Console.WriteLine("ieina");
+
             AccountDtoCreator creatorReturn = new AccountDtoCreator(creator._id, creator.firstname, creator.lastname, 
                 creator.ppicture, creator.followers, creator.followed);
 
