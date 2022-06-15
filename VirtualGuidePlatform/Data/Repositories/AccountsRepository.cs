@@ -26,6 +26,8 @@ namespace VirtualGuidePlatform.Data.Repositories
         Task<AccountDtoCreator> GetCreatorInfoAsync(string creatorId);
         Task<AccountsDto> UpdateAddPayed(string guideID, string userId);
         Task<AccountsDto> ChangePassword(AccountPswChange passwordData, string userId);
+        Task<List<AccountDtoCreator>> GetFollowers(string userId);
+        Task<List<AccountDtoCreator>> GetFollowing(string userId);
     }
 
     public class AccountsRepository : IAccountsRepository
@@ -327,6 +329,56 @@ namespace VirtualGuidePlatform.Data.Repositories
                     mapped.followers, mapped.followed, mapped.ppicture, mapped.savedguides, mapped.payedguides);
             }
             return null;
+        }
+
+
+
+        // Get User's followers list
+        public async Task<List<AccountDtoCreator>> GetFollowers(string userId)
+        {
+            try
+            {
+                // Go through accounts and check if given user is in the list of followed people
+                var accounts = (await _accountTable.FindAsync(x => x.followed.Contains(userId))).ToList();
+               
+                var dtoAccounts = new List<AccountDtoCreator>();
+
+                foreach(var account in accounts)
+                {
+                    dtoAccounts.Add(new AccountDtoCreator(account));
+                }
+
+                return dtoAccounts;
+            }
+            catch
+            {
+                return new List<AccountDtoCreator>();
+            }
+
+        }
+
+        // Get User's followed people list
+        public async Task<List<AccountDtoCreator>> GetFollowing(string userId)
+        {
+            try
+            {
+                // Go through accounts and check if given user is in the followers list
+                var accounts = (await _accountTable.FindAsync(x => x.followers.Contains(userId))).ToList();
+
+                var dtoAccounts = new List<AccountDtoCreator>();
+
+                foreach (var account in accounts)
+                {
+                    dtoAccounts.Add(new AccountDtoCreator(account));
+                }
+
+                return dtoAccounts;
+            }
+            catch
+            {
+                return new List<AccountDtoCreator>();
+            }
+
         }
     }
 }

@@ -214,5 +214,34 @@ namespace VirtualGuidePlatform.Controllers
 
             return Ok(accountUpdated);
         }
+
+
+        [HttpGet("followers/{userId}")]
+        public async Task<ActionResult<List<Accounts>>> GetFollowersList(string userId)
+        {
+            try
+            {
+                var results = await _accountsRepository.GetFollowers(userId);
+                return Ok(results);
+            }
+            catch
+            {
+                return NoContent();
+            }
+        }
+
+        [HttpGet("following/{userId}")]
+        public async Task<ActionResult<List<Accounts>>> GetFollowedPeopleList(string userId)
+        {
+            try
+            {
+                var results = await _accountsRepository.GetFollowing(userId);
+                return Ok(results);
+            }
+            catch
+            {
+                return NoContent();
+            }
+        }
     }
 }

@@ -28,5 +28,16 @@ namespace VirtualGuidePlatform.Data.Entities.Dtos.AccountDtos
             followers = Followers;
             followed = Followed;
         }
+
+        // Maps AccountDtoCreator with Accounts
+        public AccountDtoCreator(Accounts account)
+        {
+            _id = account._id;
+            firstname = account.firstname;
+            lastname = account.lastname;
+            ppicture = account.ppicture;
+            followers = account.followers;
+            followed = account.followed;
+        }
     }
 }
