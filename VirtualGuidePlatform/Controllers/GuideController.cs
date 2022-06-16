@@ -529,6 +529,55 @@ namespace VirtualGuidePlatform.Controllers
             }
             return Ok(guidesToReturn);
         }
+
+
+        [HttpGet("creatorguides/{userid}")]
+        public async Task<ActionResult<IEnumerable<GuideAllDto>>> GetCreatorGuides(string userid)
+        {
+            var guides = await guidesRepository.GetCreatorGuides(userid);
+
+            if (guides.Count > 0)
+            {
+                guides.Sort((x, y) => y.uDate.CompareTo(x.uDate));
+            }
+
+            List<GuideAllDto> guidesToReturn = new List<GuideAllDto>();
+
+            foreach (Guides item in guides)
+            {
+                var pblocks = await _blocksRepository.GetPblocks(item._id);
+                pblocks.Sort((x, y) => x.priority.CompareTo(y.priority));
+                var path = pblocks[0].URI;
+
+                var rating = await CountRating(item._id);
+                var creator = await _accountsRepository.GetCreatorInfoAsync(item.gCreatorId);
+
+                Console.WriteLine("Vidutinis reitingas " + rating.ToString());
+                GuideAllDto changed = new GuideAllDto()
+                {
+                    Image = path,
+                    _id = item._id,
+                    creatorName = creator.firstname,
+                    creatorLastName = creator.lastname,
+                    creatorId = item.gCreatorId,
+                    latitude = item.latitude,
+                    longtitude = item.longtitude,
+                    description = item.description,
+                    city = item.city,
+                    title = item.name,
+                    language = item.language,
+                    uDate = item.uDate,
+                    price = item.price,
+                    rating = rating,
+                    isFavourite = false,
+                    visible = item.visible,
+                    category = item.category
+                };
+                guidesToReturn.Add(changed);
+            }
+            return Ok(guidesToReturn);
+        }
+
         [HttpGet("savedguides/{userid}")]
         public async Task<ActionResult<IEnumerable<GuideAllDto>>> GetUserSavedGuides(string userid)
         {

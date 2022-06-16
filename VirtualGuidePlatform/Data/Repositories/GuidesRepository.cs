@@ -21,6 +21,7 @@ namespace VirtualGuidePlatform.Data.Repositories
         Task<Guides> SetInvisible(string guideId);
         Task<Guides> UpdateGuide(Guides guide);
         Task<bool> DeleteGuide(string guideId);
+        Task<List<Guides>> GetCreatorGuides(string userid);
     }
 
     public class GuidesRepository : IGuidesRepository
@@ -83,6 +84,17 @@ namespace VirtualGuidePlatform.Data.Repositories
             }
             return null;
         }
+        public async Task<List<Guides>> GetCreatorGuides(string userid)
+        {
+            var res = await _guidesTable.FindAsync(x => x.gCreatorId == userid && x.visible);
+            var items = res.ToList();
+            if (items.Count > 0)
+            {
+                return items;
+            }
+            return null;
+        }
+
         public async Task<Guides> CreateGuide(Guides guide)
         {
             var obj = (await _guidesTable.FindAsync(x => x._id == guide._id)).FirstOrDefault();
