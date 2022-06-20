@@ -9,8 +9,9 @@
         public string UId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public string Ppicture { get; set; }
 
-        public ResponseReturnDto(Responses response, string firstName, string lastName)
+        public ResponseReturnDto(Responses response, string firstName, string lastName, string ppicture)
         {
             _id = response._id;
             Text = response.text;
@@ -19,6 +20,7 @@
             UId = response.uId;
             FirstName = firstName;
             LastName = lastName;
+            Ppicture = ppicture;
         }
     }
 }

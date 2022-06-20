@@ -28,6 +28,7 @@ namespace VirtualGuidePlatform.Data.Repositories
         Task<AccountsDto> ChangePassword(AccountPswChange passwordData, string userId);
         Task<List<AccountDtoCreator>> GetFollowers(string userId);
         Task<List<AccountDtoCreator>> GetFollowing(string userId);
+        Task<int> GetPaydeUsers(string guideId);
     }
 
     public class AccountsRepository : IAccountsRepository
@@ -379,6 +380,19 @@ namespace VirtualGuidePlatform.Data.Repositories
                 return new List<AccountDtoCreator>();
             }
 
+        }
+        public async Task<int> GetPaydeUsers(string guideId)
+        {
+            var count = (await _accountTable.FindAsync(x => x.payedguides.Contains(guideId))).ToList();
+
+            if(count.Count == 0)
+            {
+                return 0;
+            }
+            else
+            {
+                return count.Count;
+            }
         }
     }
 }

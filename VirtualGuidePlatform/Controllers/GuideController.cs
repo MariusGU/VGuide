@@ -641,6 +641,12 @@ namespace VirtualGuidePlatform.Controllers
         [HttpPut("setinvisible/{guideid}")]
         public async Task<ActionResult<IEnumerable<GuideAllDto>>> SetGuideInvisible(string guideid)
         {
+            var count = await _accountsRepository.GetPaydeUsers(guideid);
+
+            if(count > 0)
+            {
+                return BadRequest("Guide is bought by a least one person");
+            }
 
             var guide = await guidesRepository.SetInvisible(guideid);
 

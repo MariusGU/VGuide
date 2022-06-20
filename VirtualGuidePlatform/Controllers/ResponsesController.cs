@@ -67,7 +67,7 @@ namespace VirtualGuidePlatform.Controllers
             foreach (Responses item in response)
             {
                 Accounts acc = await _accountsRepository.GetAccount(item.uId);
-                ResponseReturnDto responseReturn = new ResponseReturnDto(item, acc.firstname, acc.lastname);
+                ResponseReturnDto responseReturn = new ResponseReturnDto(item, acc.firstname, acc.lastname, acc.ppicture);
                 list.Add(responseReturn);
             }
 

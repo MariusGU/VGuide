@@ -243,5 +243,18 @@ namespace VirtualGuidePlatform.Controllers
                 return NoContent();
             }
         }
+
+        [HttpGet("PayedUsers/{guideId}")]
+        public async Task<ActionResult<int>> GetPayedUsers(string guideId)
+        {
+            var count = await _accountsRepository.GetPaydeUsers(guideId);
+
+            if (count == 0)
+            {
+                return BadRequest("nulis");
+            }
+
+            return Ok(count);
+        }
     }
 }
