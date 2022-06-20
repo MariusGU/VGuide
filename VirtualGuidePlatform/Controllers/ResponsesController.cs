@@ -54,7 +54,7 @@ namespace VirtualGuidePlatform.Controllers
             return Ok(response);
         }
         [HttpGet("{gid}/notuserresponses/{userId}")]
-        public async Task<ActionResult<List<Responses>>> GetNotUserResponse(string userId, string gid)
+        public async Task<ActionResult<List<ResponseReturnDto>>> GetNotUserResponse(string userId, string gid)
         {
             var response = await _responsesRepository.GetNotUserResponse(userId, gid);
 
