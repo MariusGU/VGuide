@@ -39,7 +39,7 @@ namespace VirtualGuidePlatform.Data.Repositories
         }
         public async Task<List<Responses>> GetNotUserResponse(string userid, string guideid)
         {
-            var items = (await _responseTable.FindAsync(x => x.gId == guideid && x.uId != userid)).ToList();
+            var items = (await _responseTable.FindAsync(x => x.gId == guideid)).ToList();
 
             return items;
         }

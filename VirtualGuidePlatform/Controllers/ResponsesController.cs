@@ -70,7 +70,6 @@ namespace VirtualGuidePlatform.Controllers
                 ResponseReturnDto responseReturn = new ResponseReturnDto(item, acc.firstname, acc.lastname, acc.ppicture);
                 list.Add(responseReturn);
             }
-
             return Ok(list);
         }
     }
